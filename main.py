@@ -1,59 +1,69 @@
 import discord
 import os
+import asyncio
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 
-### LOAD DISCORD BOT TOKEN ###
+# Load environment variables
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILDS_ID = int(os.getenv('DISCORD_GUILD'))
-BB_LOGS_ID = str(os.getenv('DISCORD_GUILD_LOGS_CHANNEL'))
-### END DISCORD BOT LOAD ###
+GUILD_ID = int(os.getenv('DISCORD_GUILD'))
 
-class Client(commands.Bot):
-    async def on_ready(self):
-        print(f'Logged on as {self.user}')
-        # START DEFINING THE LOGS CHANNEL FOR BOT #
-        global BB_LOGS
-        BB_LOGS = client.get_channel(BB_LOGS_ID)
-        if BB_LOGS is None:
-            BB_LOGS = await client.fetch_channel(BB_LOGS_ID)
-        # END DEFINING THE LOGS CHANNEL FOR BOT #
-        # DEFINE GUILD ID #
-
+class BanditBot(commands.Bot):
+    def __init__(self):
+        intents = discord.Intents.default()
+        intents.message_content = True
+        super().__init__(command_prefix="?", intents=intents)
+        
+        # Store important IDs
+        self.guild_id = GUILD_ID
+        self.logs_channel_id = int(os.getenv('DISCORD_GUILD_LOGS_CHANNEL'))
+        self.logs_channel = None
+        
+    async def setup_hook(self):
+        # Load all cogs
+        for filename in os.listdir('./cogs'):
+            if filename.endswith('.py') and not filename.startswith('__'):
+                await self.load_extension(f'cogs.{filename[:-3]}')
+                print(f'Loaded cog: {filename[:-3]}')
+        
+        # Sync commands with guild
         try:
-            guild = discord.Object(id=GUILDS_ID)
-            synced = await self.tree.sync(guild=guild)
-            print(f'Synced {len(synced)} commands to guild {guild.id}')
+            guild = discord.Object(id=self.guild_id)
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
+            print(f'Synced commands to guild {self.guild_id}')
         except Exception as e:
             print(f'Error syncing commands to guild - {e}')
             
-
+    async def on_ready(self):
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        
+        # Setup logs channel
+        try:
+            self.logs_channel = self.get_channel(self.logs_channel_id)
+            if self.logs_channel is None:
+                self.logs_channel = await self.fetch_channel(self.logs_channel_id)
+            print(f'Connected to logs channel: {self.logs_channel.name}')
+        except Exception as e:
+            print(f'Error connecting to logs channel - {e}')
+            
     async def on_message(self, message):
         if message.author == self.user:
             return
+            
+        # Process commands from messages (needed for prefix commands)
+        await self.process_commands(message)
         
+        # Simple message response example
         if message.content.startswith('hello'):
             await message.channel.send(f'Hi there! {message.author}')
 
-intents = discord.Intents.default()
-intents.message_content = True
-client = Client(command_prefix="?", intents=intents)
+async def main():
+    bot = BanditBot()
+    async with bot:
+        await bot.start(TOKEN)
 
-GUILD_ID = discord.Object(id=GUILDS_ID)
-
-### COMMAND HANDLING ###
-
-@client.tree.command(name="hello", description="Bandit Bot says hello!", guild=GUILD_ID)
-async def sayHello(interaction: discord.Interaction):
-    await interaction.response.send_message(f'Hi there! {interaction.user}')
-    print(f'BanditBot replied with Hello to {interaction.user}')
-
-@client.tree.command(name="printer", description="Bandit Bot repeats your message", guild=GUILD_ID)
-async def sayHello(interaction: discord.Interaction, printer: str):
-    await interaction.response.send_message(printer)
-    await BB_LOGS.send(f'User {interaction.user} forced BanditBot to send a message with content - {printer}')
-    print(f'User {interaction.user} forced BanditBot to send a message with content - {printer}')
-
-client.run(TOKEN)
+if __name__ == "__main__":
+    asyncio.run(main())
