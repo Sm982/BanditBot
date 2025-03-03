@@ -10,16 +10,18 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_ID = int(os.getenv('DISCORD_GUILD'))
 LOGS_CHANNEL_ID = int(os.getenv('DISCORD_GUILD_LOGS_CHANNEL'))
+EVENTS_CHANNEL_ID = int(os.getenv('DISCORD_EVENTS_CHANNEL'))
 
 class BanditBot(commands.Bot):
     def __init__(self):
-        intents = discord.Intents.default()
+        intents = discord.Intents.default() 
         intents.message_content = True
         super().__init__(command_prefix="?", intents=intents)
         
         # Store important IDs
         self.guild_id = GUILD_ID
         self.logs_channel_id = LOGS_CHANNEL_ID
+        self.events_channel_id = EVENTS_CHANNEL_ID
         self.logs_channel = None
         
     async def setup_hook(self):
@@ -49,6 +51,19 @@ class BanditBot(commands.Bot):
             print(f'Synced to logs channel: {self.logs_channel.name}')
         except Exception as e:
             print(f'Error syncing to logs channel - {e}')
+        
+        #END setup logs channel
+            
+        # Setup events channel
+        try:
+            self.events_channel = self.get_channel(self.events_channel_id)
+            if self.events_channel is None:
+                self.events_channel = await self.fetch_channel(self.events_channel_id)
+            print(f'Synced to events channel: {self.events_channel.name}')
+        except Exception as e:
+            print(f'Error syncing event channel - {e}')
+        
+        #END setup events channel
             
     async def on_message(self, message):
         if message.author == self.user:
