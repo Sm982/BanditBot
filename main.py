@@ -1,6 +1,7 @@
 import discord
 import os
 import asyncio
+import importlib.util
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
@@ -14,7 +15,7 @@ EVENTS_CHANNEL_ID = int(os.getenv('DISCORD_EVENTS_CHANNEL'))
 
 class BanditBot(commands.Bot):
     def __init__(self):
-        intents = discord.Intents.default() 
+        intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(command_prefix="?", intents=intents)
         
@@ -23,13 +24,26 @@ class BanditBot(commands.Bot):
         self.logs_channel_id = LOGS_CHANNEL_ID
         self.events_channel_id = EVENTS_CHANNEL_ID
         self.logs_channel = None
+        self.events_channel = None
         
     async def setup_hook(self):
         # Load all cogs
-        for filename in os.listdir('./cogs'):
+        print("Loading cogs...")
+        cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
+        
+        if not os.path.exists(cogs_dir):
+            print(f"Error: Cogs directory not found at {cogs_dir}")
+            os.makedirs(cogs_dir, exist_ok=True)
+            print(f"Created cogs directory at {cogs_dir}")
+            
+        for filename in os.listdir(cogs_dir):
             if filename.endswith('.py') and not filename.startswith('__'):
-                await self.load_extension(f'cogs.{filename[:-3]}')
-                print(f'Loaded cog: {filename[:-3]}')
+                try:
+                    cog_path = f'cogs.{filename[:-3]}'
+                    await self.load_extension(cog_path)
+                    print(f'Loaded cog: {filename[:-3]}')
+                except Exception as e:
+                    print(f'Failed to load cog {filename}: {str(e)}')
         
         # Sync commands with guild
         try:
@@ -51,9 +65,8 @@ class BanditBot(commands.Bot):
             print(f'Synced to logs channel: {self.logs_channel.name}')
         except Exception as e:
             print(f'Error syncing to logs channel - {e}')
-        
         #END setup logs channel
-            
+        
         # Setup events channel
         try:
             self.events_channel = self.get_channel(self.events_channel_id)
@@ -62,7 +75,6 @@ class BanditBot(commands.Bot):
             print(f'Synced to events channel: {self.events_channel.name}')
         except Exception as e:
             print(f'Error syncing event channel - {e}')
-        
         #END setup events channel
             
     async def on_message(self, message):
