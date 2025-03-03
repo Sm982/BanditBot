@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_ID = int(os.getenv('DISCORD_GUILD'))
+LOGS_CHANNEL_ID = int(os.getenv('DISCORD_GUILD_LOGS_CHANNEL'))
 
 class BanditBot(commands.Bot):
     def __init__(self):
@@ -18,7 +19,7 @@ class BanditBot(commands.Bot):
         
         # Store important IDs
         self.guild_id = GUILD_ID
-        self.logs_channel_id = int(os.getenv('DISCORD_GUILD_LOGS_CHANNEL'))
+        self.logs_channel_id = LOGS_CHANNEL_ID
         self.logs_channel = None
         
     async def setup_hook(self):
@@ -45,9 +46,9 @@ class BanditBot(commands.Bot):
             self.logs_channel = self.get_channel(self.logs_channel_id)
             if self.logs_channel is None:
                 self.logs_channel = await self.fetch_channel(self.logs_channel_id)
-            print(f'Connected to logs channel: {self.logs_channel.name}')
+            print(f'Synced to logs channel: {self.logs_channel.name}')
         except Exception as e:
-            print(f'Error connecting to logs channel - {e}')
+            print(f'Error syncing to logs channel - {e}')
             
     async def on_message(self, message):
         if message.author == self.user:
@@ -55,10 +56,6 @@ class BanditBot(commands.Bot):
             
         # Process commands from messages (needed for prefix commands)
         await self.process_commands(message)
-        
-        # Simple message response example
-        if message.content.startswith('hello'):
-            await message.channel.send(f'Hi there! {message.author}')
 
 async def main():
     bot = BanditBot()

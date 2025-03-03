@@ -21,7 +21,13 @@ class UtilityCommands(commands.Cog):
         minutes, seconds = divmod(remainder, 60)
         
         uptime_str = f"{hours}h {minutes}m {seconds}s"
-        await interaction.response.send_message(f"I've been running for {uptime_str}")
+        
+        embed = discord.Embed(
+            title="Bandit Bot Uptime",
+            color=discord.Color.blue()
+        )
+        embed.add_field(name="Uptime", value=uptime_str, inline=True)
+        await interaction.response.send_message(embed=embed)
         
     @app_commands.command(name="botinfo", description="Get information about the bot")
     async def botinfo(self, interaction: discord.Interaction):
