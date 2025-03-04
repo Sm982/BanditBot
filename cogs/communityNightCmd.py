@@ -23,7 +23,7 @@ class commNightCMD(commands.Cog):
             
     @app_commands.command(name="communitynight", description="Schedule a community night")
     @commands.has_any_role('SillyMonkey')
-    async def scheduler(self, interaction: discord.Interaction, gameName: str, extraInfo: str, yearSche: str, monthSche: str, daySche: str, hourSche: str, minuteSche: str):
+    async def scheduler(self, interaction: discord.Interaction, gamename: str, extrainfo: str, yearsche: str, monthsche: str, daysche: str, hoursche: str, minutesche: str):
         await interaction.response.send_message("Sure", ephemeral=True)
         #Schedule community night command here
         embed = discord.Embed(
