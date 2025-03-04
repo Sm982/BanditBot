@@ -72,15 +72,17 @@ class commNightCMD(commands.Cog):
     # Ask the user what game 
     # ask the user if there is any info users should know?
     # Formulate the message and then post the message
-    async def scheduler(self, interaction: discord.Interaction, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
+    async def scheduler(self, interaction: discord.Interaction, gamename: str, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
         await interaction.response.send_message("Sure", ephemeral=True)
         #Schedule community night command here
         embed = discord.Embed(
             title="TheBanditWombat Community Night!",
             color=banditColor
         )
-        epochtime = dateCalculator(nextday, choosehour, chooseminutes, amorpm)
-        embed.add_field(name="Timestamp", value=f'<t:{epochtime}:F>', inline=True)
+        epochtime = dateCalculator(gamename, nextday, choosehour, chooseminutes, amorpm)
+        embed.add_field(name="Game 🎮", value=f'{gamename}', inline=False)
+        embed.add_field(name="", value="Make sure your game is downloaded before hand!")
+        embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=True)
         if self.bot.events_channel:
             await self.bot.events_channel.send(embed=embed)
      
