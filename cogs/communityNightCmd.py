@@ -72,7 +72,7 @@ class commNightCMD(commands.Cog):
     # Ask the user what game 
     # ask the user if there is any info users should know?
     # Formulate the message and then post the message
-    async def scheduler(self, interaction: discord.Interaction, nextday: str, choosehour: str, chooseminutes: str, amorpm: str):
+    async def scheduler(self, interaction: discord.Interaction, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
         await interaction.response.send_message("Sure", ephemeral=True)
         #Schedule community night command here
         embed = discord.Embed(
