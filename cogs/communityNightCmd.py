@@ -80,8 +80,8 @@ class commNightCMD(commands.Cog):
             color=banditColor
         )
         epochtime = dateCalculator(nextday, choosehour, chooseminutes, amorpm)
-        embed.add_field(name="Game 🎮", value=f'{gamename}', inline=False)
-        embed.add_field(name="", value="Make sure your game is downloaded before hand!")
+        embed.add_field(name="Game 🎮", value=f'{gamename}', inline=True)
+        embed.add_field(name="", value="Make sure your game is downloaded before hand!", inline=False)
         embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=True)
         if self.bot.events_channel:
             await self.bot.events_channel.send(embed=embed)
