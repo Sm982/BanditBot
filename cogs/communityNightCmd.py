@@ -79,7 +79,7 @@ class commNightCMD(commands.Cog):
             title="TheBanditWombat Community Night!",
             color=banditColor
         )
-        epochtime = dateCalculator(gamename, nextday, choosehour, chooseminutes, amorpm)
+        epochtime = dateCalculator(nextday, choosehour, chooseminutes, amorpm)
         embed.add_field(name="Game 🎮", value=f'{gamename}', inline=False)
         embed.add_field(name="", value="Make sure your game is downloaded before hand!")
         embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=True)
