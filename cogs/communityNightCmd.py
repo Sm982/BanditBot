@@ -23,6 +23,15 @@ class commNightCMD(commands.Cog):
             
     @app_commands.command(name="communitynight", description="Schedule a community night")
     @commands.has_any_role('SillyMonkey')
+    # Idea for this Command -
+    # Grab Current Year, Current Month and Current Date from time module, ask user when the next night is e.g Monday
+    # Calculate whether the next Monday is this current year and month, if not, find out what date is the next Monday and set the command to that
+    # Then ask the user pm or am e.g pm
+    # Then ask user what time e.g hour - 5 minute - 0 or 00 
+    # Calculate epoch time for the next monday available at 5pm UTC +11
+    # Ask the user what game 
+    # ask the user if there is any info users should know?
+    # Formulate the message and then post the message
     async def scheduler(self, interaction: discord.Interaction, gamename: str, extrainfo: str, yearsche: str, monthsche: str, daysche: str, hoursche: str, minutesche: str):
         await interaction.response.send_message("Sure", ephemeral=True)
         #Schedule community night command here
