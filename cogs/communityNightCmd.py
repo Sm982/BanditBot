@@ -1,7 +1,47 @@
 import discord
+import datetime
 import time
+import pytz
 from discord import app_commands
 from discord.ext import commands
+
+def dateCalculator(nextday, chosenhour, chosenminutes, eveormorn):
+    epoch = 00000
+    timezone = pytz.timezone("Australia/Brisbane")
+    today = datetime.datetime.now(timezone).date()
+
+    # Get current date
+    current_year = today.year
+    current_month = today.month
+    current_day = today.day
+
+    # We need to store weekday and convert user input
+    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    target_day_index = days_of_week.index(nextday.capitalize())
+
+    # Lets find out how manydays until next occurrence of target day
+    today_index = today.weekday()
+    days_until_next =(target_day_index - today_index) % 7
+    
+    # If today is the target day, return today's 
+    next_day_date = today if days_until_next == 0 else today + datetime.timedelta(days=days_until_next)
+
+    # Extract the next occurrences date
+    next_day = next_day_date.day
+    next_month = next_day_date.month
+    next_year = next_day_date.year
+
+    if eveormorn.lower() == "pm" and chosenhour != 12:
+        chosenhour += 12
+    elif eveormorn.lower() == "am" and chosenhour == 12:
+        chosenhour = 0
+    
+    dt = datetime.datetime(next_year, next_month, next_day, chosenhour, chosenminutes, tzinfo=timezone)
+
+    #convert to epoch time
+    epoch = int(time.mktime(dt.timetuple())) # Convert to unix timestamp
+ 
+    return epoch
 
 class commNightCMD(commands.Cog):
     global banditColor
@@ -32,14 +72,15 @@ class commNightCMD(commands.Cog):
     # Ask the user what game 
     # ask the user if there is any info users should know?
     # Formulate the message and then post the message
-    async def scheduler(self, interaction: discord.Interaction, gamename: str, extrainfo: str, yearsche: str, monthsche: str, daysche: str, hoursche: str, minutesche: str):
+    async def scheduler(self, interaction: discord.Interaction, nextday: str, choosehour: str, chooseminutes: str, amorpm: str):
         await interaction.response.send_message("Sure", ephemeral=True)
         #Schedule community night command here
         embed = discord.Embed(
-            title="Bandit Bot Info",
+            title="TheBanditWombat Community Night!",
             color=banditColor
         )
-        embed.add_field(name="Python Version", value="Community", inline=True)
+        epochtime = dateCalculator(nextday, choosehour, chooseminutes, amorpm)
+        embed.add_field(name="Timestamp", value=f'<t:{epochtime}:F>', inline=True)
         if self.bot.events_channel:
             await self.bot.events_channel.send(embed=embed)
      
