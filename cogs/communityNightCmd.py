@@ -77,6 +77,9 @@ class commNightCMD(commands.Cog):
         if amorpm not in ['am', 'pm']:
             errors.append("Time period must be either 'am' or 'pm'")
         
+        if nextday.lower() not in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+            errors.append(f"Chosen day must be a valid day. Check for either spelling mistakes or choose a proper day. Your input: {nextday}")
+        
         if errors:
             error_message = "❌ Invalid Input:\n" + "\n".join(f'{error}' for error in errors)
             await interaction.response.send_message(error_message, ephemeral=True)
