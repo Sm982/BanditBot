@@ -62,7 +62,7 @@ class commNightCMD(commands.Cog):
             print(f"Error in command: {str(error)}")
             
     @app_commands.command(name="communitynight", description="Schedule a community night")
-    @commands.has_any_role(1044403662996373613, 1044403662996373612)
+    @commands.has_any_role(1251353532037337200, 1251353440102121524)
     async def scheduler(self, interaction: discord.Interaction, gamename: str, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
         errors = []
 
