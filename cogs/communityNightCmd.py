@@ -64,17 +64,36 @@ class commNightCMD(commands.Cog):
     @app_commands.command(name="communitynight", description="Schedule a community night")
     @commands.has_any_role(1044403662996373613, 1044403662996373612)
     async def scheduler(self, interaction: discord.Interaction, gamename: str, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
-        await interaction.response.send_message("Sure", ephemeral=True)
+        errors = []
+
+        if choosehour < 1 or choosehour > 12:
+            errors.append("Hour must be between 1 and 12.")
+
+        if chooseminutes < 0 or chooseminutes > 59:
+            errors.append("Minutes must be between 0 and 59")
+        
+        amorpm = amorpm.lower()
+
+        if amorpm not in ['am', 'pm']:
+            errors.append("Time period must be either 'am' or 'pm'")
+        
+        if errors:
+            error_message = "❌ Invalid Input:\n" + "\n".join(f'{error}' for error in errors)
+            await interaction.response.send_message(error_message, ephemeral=True)
+            return
+        
+        await interaction.response.send_message(f"Sending Message to {self.bot.events_channel.name}", ephemeral=True)
         #Schedule community night command here
         embed = discord.Embed(
             title="It's Community Night!!!",
+            description="It's TheBanditWombat's weekly Community Night!",
             color=banditColor
         )
         epochtime = dateCalculator(nextday, choosehour, chooseminutes, amorpm)
         embed.add_field(name="Game 🎮", value=f'{gamename}', inline=True)
         embed.add_field(name="", value="Make sure your game is downloaded before hand!", inline=False)
         embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=False)
-        embed.set_footer(text=f'{interaction.user}', icon_url=f'{interaction.user.display_avatar.url}')
+        embed.set_footer(text=f'{interaction.user.display_name}', icon_url=f'{interaction.user.display_avatar.url}')
         if self.bot.events_channel:
             await self.bot.events_channel.send("@everyone", embed=embed)
      
