@@ -30,7 +30,7 @@ class GeneralCommands(commands.Cog):
     @app_commands.command(name="printer", description="Bandit Bot repeats your message")
     @app_commands.checks.has_any_role('Bandits Admins') 
     async def printer(self, interaction: discord.Interaction, printer: str):
-        await interaction.response.send_message(printer, ephemeral=True)
+        await interaction.response.send_message(printer, ephemeral=False)
         
         # Log to the logs channel if available
         if self.bot.logs_channel:
