@@ -28,7 +28,7 @@ class GeneralCommands(commands.Cog):
             await self.bot.logs_channel.send(f'Replied with hello to {interaction.user}')
             
     @app_commands.command(name="printer", description="Bandit Bot repeats your message")
-    @app_commands.checks.has_any_role('SillyMonkey') 
+    @app_commands.checks.has_any_role('Bandits Admins') 
     async def printer(self, interaction: discord.Interaction, printer: str):
         await interaction.response.send_message(printer, ephemeral=True)
         
