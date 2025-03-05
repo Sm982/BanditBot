@@ -62,29 +62,21 @@ class commNightCMD(commands.Cog):
             print(f"Error in command: {str(error)}")
             
     @app_commands.command(name="communitynight", description="Schedule a community night")
-    @commands.has_any_role('SillyMonkey')
-    # Idea for this Command -
-    # Grab Current Year, Current Month and Current Date from time module, ask user when the next night is e.g Monday
-    # Calculate whether the next Monday is this current year and month, if not, find out what date is the next Monday and set the command to that
-    # Then ask the user pm or am e.g pm
-    # Then ask user what time e.g hour - 5 minute - 0 or 00 
-    # Calculate epoch time for the next monday available at 5pm UTC +11
-    # Ask the user what game 
-    # ask the user if there is any info users should know?
-    # Formulate the message and then post the message
+    @commands.has_any_role(1044403662996373613, 1044403662996373612)
     async def scheduler(self, interaction: discord.Interaction, gamename: str, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
         await interaction.response.send_message("Sure", ephemeral=True)
         #Schedule community night command here
         embed = discord.Embed(
-            title="TheBanditWombat Community Night!",
+            title="It's Community Night!!!",
             color=banditColor
         )
         epochtime = dateCalculator(nextday, choosehour, chooseminutes, amorpm)
         embed.add_field(name="Game 🎮", value=f'{gamename}', inline=True)
         embed.add_field(name="", value="Make sure your game is downloaded before hand!", inline=False)
-        embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=True)
+        embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=False)
+        embed.set_footer(text=f'{interaction.user}', icon_url=f'{interaction.user.displayAvatarURL}')
         if self.bot.events_channel:
-            await self.bot.events_channel.send(embed=embed)
+            await self.bot.events_channel.send("@everyone", embed=embed)
      
 
 async def setup(bot):
