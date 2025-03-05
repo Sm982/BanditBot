@@ -74,7 +74,7 @@ class commNightCMD(commands.Cog):
         embed.add_field(name="Game 🎮", value=f'{gamename}', inline=True)
         embed.add_field(name="", value="Make sure your game is downloaded before hand!", inline=False)
         embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=False)
-        embed.set_footer(text=f'{interaction.user}', icon_url=f'{interaction.user.displayAvatarURL}')
+        embed.set_footer(text=f'{interaction.user}', icon_url=f'{interaction.user.display_avatar.url}')
         if self.bot.events_channel:
             await self.bot.events_channel.send("@everyone", embed=embed)
      
