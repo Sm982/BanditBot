@@ -25,7 +25,7 @@ class UtilityCommands(commands.Cog):
             print(f"Error in command: {str(error)}")
         
     @app_commands.command(name="info", description="Check the bot's latency")
-    @app_commands.checks.has_any_role('SillyMonkey') 
+    @app_commands.checks.has_any_role('Bandits Admins') 
     async def ping(self, interaction: discord.Interaction):
         latency = round(self.bot.latency * 1000)
         uptime_seconds = int(time.time() - self.start_time)

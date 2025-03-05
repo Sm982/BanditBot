@@ -3,6 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 
 class GeneralCommands(commands.Cog):
+    global banditColor
+    banditColor = 0x0a8888
     def __init__(self, bot):
         self.bot = bot
         
@@ -22,10 +24,6 @@ class GeneralCommands(commands.Cog):
     async def say_hello(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'Hi there! {interaction.user}', ephemeral=True)
         print(f'BanditBot replied with Hello to {interaction.user}')
-        
-        # Log to the logs channel if available
-        if self.bot.logs_channel:
-            await self.bot.logs_channel.send(f'Replied with hello to {interaction.user}')
             
     @app_commands.command(name="printer", description="Bandit Bot repeats your message")
     @app_commands.checks.has_any_role('Bandits Admins') 
@@ -34,7 +32,12 @@ class GeneralCommands(commands.Cog):
         
         # Log to the logs channel if available
         if self.bot.logs_channel:
-            await self.bot.logs_channel.send(f'User {interaction.user} forced BanditBot to send a message with content - {printer}')
+            embed = discord.Embed(
+                title=f"{interaction.user.display_name}",
+                color=banditColor,
+                description=f"{interaction.user.display_name} forced BanditBot to send a message with content - {printer}"
+            )
+            await self.bot.logs_channel.send(embed=embed)
         
         print(f'User {interaction.user} forced BanditBot to send a message with content - {printer}')
 
