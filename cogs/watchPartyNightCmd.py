@@ -61,7 +61,7 @@ class watchPartCmd(commands.Cog):
                 await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
             print(f"Error in command: {str(error)}")
             
-    @app_commands.command(name="watchparty", description="Schedule a community night")
+    @app_commands.command(name="watchparty", description="Schedule a watch party night")
     @commands.has_any_role("Bandits Admins")
     async def scheduler(self, interaction: discord.Interaction, description: str, gamename: str, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
         errors = []
@@ -93,8 +93,7 @@ class watchPartCmd(commands.Cog):
             color=banditColor
         )
         epochtime = dateCalculator(nextday, choosehour, chooseminutes, amorpm)
-        embed.add_field(name="Game 📺", value=f'{gamename}', inline=True)
-        embed.add_field(name="", value="Make sure your game is downloaded before hand!", inline=False)
+        embed.add_field(name="What are we watching 📺", value=f'{gamename}', inline=True)
         embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=False)
         embed.set_footer(text=f'{interaction.user.display_name}', icon_url=f'{interaction.user.display_avatar.url}')
         if self.bot.events_channel:
