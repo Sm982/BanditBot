@@ -43,6 +43,10 @@ class UtilityCommands(commands.Cog):
         embed.add_field(name="Uptime", value=uptime_str + "ms", inline=True)
         await interaction.response.send_message(embed=embed)
         logger.info(f'User {interaction.user.display_name} requested the Bot\'s uptime and latency')
+        
+    @app_commands.command(name="about", description="Learn all about BanditBot!")
+    async def about(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f'SillyMonkey hasn\'t finished writing this command yet!')
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])
