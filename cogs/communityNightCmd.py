@@ -2,6 +2,7 @@ import discord
 import datetime
 import time
 import pytz
+from logger import logger
 from discord import app_commands
 from discord.ext import commands
 
@@ -41,6 +42,7 @@ def dateCalculator(nextday, chosenhour, chosenminutes, eveormorn):
     #convert to epoch time
     epoch = int(time.mktime(dt.timetuple())) # Convert to unix timestamp
  
+    logger.info(f'Calculated epoch time as requested by a user, output from SYSTEM is {epoch}')
     return epoch
 
 class commNightCMD(commands.Cog):
@@ -53,16 +55,17 @@ class commNightCMD(commands.Cog):
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
             await interaction.response.send_message("You do NOT have the required role to use this command.", ephemeral=True)
+            logger.info(f'User {interaction.user.display_name} attempted to execute a command however did not have the correct permissions.')
         else:
             # Handle other errors
             if interaction.response.is_done():
                 await interaction.followup.send(f"An error occurred: {str(error)}", ephemeral=True)
             else:
                 await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
-            print(f"Error in command: {str(error)}")
+            logger.error(f'Error in command: {str(error)}')
             
     @app_commands.command(name="communitynight", description="Schedule a community night")
-    @commands.has_any_role("Bandits Admins")
+    @app_commands.checks.has_any_role('Bandits Admins') 
     async def scheduler(self, interaction: discord.Interaction, gamename: str, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
         errors = []
 
@@ -82,6 +85,7 @@ class commNightCMD(commands.Cog):
         
         if errors:
             error_message = "❌ Invalid Input:\n" + "\n".join(f'{error}' for error in errors)
+            logger.info(f'User {interaction.user.display_name} attempted the Community Night Command however the following errors were presented' + " - ".join(f'{error}' for error in errors))
             await interaction.response.send_message(error_message, ephemeral=True)
             return
         
@@ -99,6 +103,7 @@ class commNightCMD(commands.Cog):
         embed.set_footer(text=f'{interaction.user.display_name}', icon_url=f'{interaction.user.display_avatar.url}')
         if self.bot.events_channel:
             await self.bot.events_channel.send("@everyone", embed=embed)
+            logger.info(f'User {interaction.user.display_name} sent the command Community Night to the events channel. Custom user content was {gamename}')
      
 
 async def setup(bot):
