@@ -135,14 +135,22 @@ class ChannelSelectView(discord.ui.View):
         super().__init__()
         self.embed = embed
         
-    @discord.ui.channel_select(
-        placeholder="Select a channel",
-        min_values=1, 
-        max_values=1,
-        channel_types=[discord.ChannelType.text]
-    )
-    async def channel_select(self, select, interaction):
-        channel = select.values[0]
+        # Create a channel select menu
+        self.channel_select = discord.ui.ChannelSelect(
+            placeholder="Select a channel",
+            min_values=1, 
+            max_values=1,
+            channel_types=[discord.ChannelType.text]
+        )
+        
+        # Set the callback
+        self.channel_select.callback = self.channel_callback
+        
+        # Add the select menu to the view
+        self.add_item(self.channel_select)
+        
+    async def channel_callback(self, interaction: discord.Interaction):
+        channel = self.channel_select.values[0]
         await channel.send(embed=self.embed)
         await interaction.response.send_message(f"Schedule posted in {channel.mention}!", ephemeral=True)
 
