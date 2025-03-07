@@ -9,39 +9,41 @@ class ScheduleModal(discord.ui.Modal, title="Create Weekly Schedule"):
     def __init__(self):
         super().__init__()
         
-        # Create input fields for each day
-        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        
-        for day in days:
-            self.add_item(
-                discord.ui.TextInput(
-                    label=f"{day} Schedule",
-                    placeholder="5:00PM-8:00PM (leave blank if not streaming)",
-                    required=False,
-                    style=discord.TextStyle.short
-                )
-            )
-            
-        self.add_item(
-            discord.ui.TextInput(
-                label="Schedule Title",
-                placeholder="This Week's Twitch Schedule",
-                required=True,
-                style=discord.TextStyle.short
-            )
+        # Add title input
+        self.title_input = discord.ui.TextInput(
+            label="Schedule Title",
+            placeholder="This Week's Twitch Schedule",
+            required=True,
+            style=discord.TextStyle.short
         )
+        self.add_item(self.title_input)
+        
+        # Create inputs for weekdays (Mon-Fri)
+        self.weekday_input = discord.ui.TextInput(
+            label="Weekday Schedule (Mon-Fri)",
+            placeholder="Monday: 5-8PM, Tuesday: 6-9PM, etc.",
+            required=False,
+            style=discord.TextStyle.paragraph
+        )
+        self.add_item(self.weekday_input)
+        
+        # Create input for weekend (Sat-Sun)
+        self.weekend_input = discord.ui.TextInput(
+            label="Weekend Schedule (Sat-Sun)",
+            placeholder="Saturday: 2-7PM, Sunday: 3-8PM, etc.",
+            required=False,
+            style=discord.TextStyle.paragraph
+        )
+        self.add_item(self.weekend_input)
     
     async def on_submit(self, interaction: discord.Interaction):
         # Get values from form
-        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        schedule_data = {}
+        title = self.title_input.value
+        weekday_data = self.parse_schedule_input(self.weekday_input.value)
+        weekend_data = self.parse_schedule_input(self.weekend_input.value)
         
-        for i, day in enumerate(days):
-            time_range = self.children[i].value.strip()
-            if time_range:
-                schedule_data[day] = time_range
-        
-        title = self.children[7].value
+        # Combine schedule data
+        schedule_data = {**weekday_data, **weekend_data}
         
         # Create embed
         embed = await self.create_schedule_embed(title, schedule_data)
@@ -53,6 +55,35 @@ class ScheduleModal(discord.ui.Modal, title="Create Weekly Schedule"):
             ephemeral=True
         )
     
+    def parse_schedule_input(self, input_text):
+        """Parse input text like 'Monday: 5-8PM, Tuesday: 6-9PM' into a dictionary"""
+        schedule_data = {}
+        if not input_text.strip():
+            return schedule_data
+            
+        # Split by commas or newlines
+        entries = input_text.replace(',', '\n').split('\n')
+        
+        for entry in entries:
+            entry = entry.strip()
+            if not entry:
+                continue
+                
+            # Try to split by colon
+            if ':' in entry:
+                day, time_range = entry.split(':', 1)
+                day = day.strip()
+                time_range = time_range.strip()
+                
+                # Validate day
+                day_words = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                for valid_day in day_words:
+                    if valid_day.lower() in day.lower():
+                        schedule_data[valid_day] = time_range
+                        break
+        
+        return schedule_data
+    
     async def on_error(self, interaction: discord.Interaction, error):
         await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
     
@@ -63,8 +94,10 @@ class ScheduleModal(discord.ui.Modal, title="Create Weekly Schedule"):
             color=0x0a8888  # Using banditColor
         )
         
-        for day, time_range in schedule_data.items():
-            if time_range:
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        for day in days:
+            if day in schedule_data and schedule_data[day]:
+                time_range = schedule_data[day]
                 # Parse time range and convert to timestamps if needed
                 try:
                     start_time, end_time = time_range.split("-")
