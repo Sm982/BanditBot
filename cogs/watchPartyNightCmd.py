@@ -63,7 +63,7 @@ class watchPartCmd(commands.Cog):
             logger.error(f'Error in command: {str(error)}')
             
     @app_commands.command(name="watchparty", description="Schedule a watch party night")
-    @commands.has_any_role("Bandits Admins")
+    @app_commands.checks.has_any_role('Bandits Admins') 
     async def scheduler(self, interaction: discord.Interaction, description: str, gamename: str, nextday: str, choosehour: int, chooseminutes: int, amorpm: str):
         errors = []
 
