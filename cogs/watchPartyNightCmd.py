@@ -2,6 +2,7 @@ import discord
 import datetime
 import time
 import pytz
+from logger import logger
 from discord import app_commands
 from discord.ext import commands
 
@@ -49,17 +50,17 @@ class watchPartCmd(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
-    # Error handling method for application commands
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
             await interaction.response.send_message("You do NOT have the required role to use this command.", ephemeral=True)
+            logger.info(f'User {interaction.user.display_name} attempted to execute a command however did not have the correct permissions.')
         else:
             # Handle other errors
             if interaction.response.is_done():
                 await interaction.followup.send(f"An error occurred: {str(error)}", ephemeral=True)
             else:
                 await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
-            print(f"Error in command: {str(error)}")
+            logger.error(f'Error in command: {str(error)}')
             
     @app_commands.command(name="watchparty", description="Schedule a watch party night")
     @commands.has_any_role("Bandits Admins")
@@ -82,6 +83,7 @@ class watchPartCmd(commands.Cog):
         
         if errors:
             error_message = "❌ Invalid Input:\n" + "\n".join(f'{error}' for error in errors)
+            logger.info(f'User {interaction.user.display_name} attempted the Community Night Command however the following errors were presented' + " - ".join(f'{error}' for error in errors))
             await interaction.response.send_message(error_message, ephemeral=True)
             return
         
@@ -98,6 +100,7 @@ class watchPartCmd(commands.Cog):
         embed.set_footer(text=f'{interaction.user.display_name}', icon_url=f'{interaction.user.display_avatar.url}')
         if self.bot.events_channel:
             await self.bot.events_channel.send(embed=embed)
+            logger.info(f'User {interaction.user.display_name} sent the command Watch Party to the events channel. Custom user content was {description} and {gamename}')
      
 
 async def setup(bot):

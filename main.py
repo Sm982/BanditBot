@@ -2,6 +2,7 @@ import discord
 import os
 import asyncio
 import importlib.util
+from logger import logger
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
@@ -28,43 +29,43 @@ class BanditBot(commands.Bot):
         
     async def setup_hook(self):
         # Load all cogs
-        print("Loading cogs...")
+        logger.info("Loading cogs...")
         cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
         
         if not os.path.exists(cogs_dir):
-            print(f"Error: Cogs directory not found at {cogs_dir}")
+            logger.error(f"Cogs directory not found at {cogs_dir}")
             os.makedirs(cogs_dir, exist_ok=True)
-            print(f"Created cogs directory at {cogs_dir}")
+            logger.info(f"Created cogs directory at {cogs_dir}")
             
         for filename in os.listdir(cogs_dir):
             if filename.endswith('.py') and not filename.startswith('__'):
                 try:
                     cog_path = f'cogs.{filename[:-3]}'
                     await self.load_extension(cog_path)
-                    print(f'Loaded cog: {filename[:-3]}')
+                    logger.info(f'Loaded cog: {filename[:-3]}')
                 except Exception as e:
-                    print(f'Failed to load cog {filename}: {str(e)}')
+                    logger.error(f'Failed to load cog {filename}: {str(e)}')
         
         # Sync commands with guild
         try:
             guild = discord.Object(id=self.guild_id)
             self.tree.copy_global_to(guild=guild)
             await self.tree.sync(guild=guild)
-            print(f'Synced commands to guild {self.guild_id}')
+            logger.info(f'Synced commands to guild {self.guild_id}')
         except Exception as e:
-            print(f'Error syncing commands to guild - {e}')
+            logger.error(f'Error syncing commands to guild - {e}')
             
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        logger.info(f'Logged in as {self.user} (ID: {self.user.id})')
         
         # Setup logs channel
         try:
             self.logs_channel = self.get_channel(self.logs_channel_id)
             if self.logs_channel is None:
                 self.logs_channel = await self.fetch_channel(self.logs_channel_id)
-            print(f'Synced to logs channel: {self.logs_channel.name}')
+            logger.info(f'Synced to logs channel: {self.logs_channel.name}')
         except Exception as e:
-            print(f'Error syncing to logs channel - {e}')
+            logger.error(f'Error syncing to logs channel - {e}')
         #END setup logs channel
         
         # Setup events channel
@@ -72,9 +73,9 @@ class BanditBot(commands.Bot):
             self.events_channel = self.get_channel(self.events_channel_id)
             if self.events_channel is None:
                 self.events_channel = await self.fetch_channel(self.events_channel_id)
-            print(f'Synced to events channel: {self.events_channel.name}')
+            logger.info(f'Synced to events channel: {self.events_channel.name}')
         except Exception as e:
-            print(f'Error syncing event channel - {e}')
+            logger.error(f'Error syncing event channel - {e}')
         #END setup events channel
             
     async def on_message(self, message):

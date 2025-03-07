@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord import Color
+from logger import logger
 import platform
 import time
 
@@ -12,19 +13,19 @@ class UtilityCommands(commands.Cog):
     global banditColor
     banditColor = 0x0a8888
 
-    # Error handling method for application commands
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
             await interaction.response.send_message("You do NOT have the required role to use this command.", ephemeral=True)
+            logger.info(f'User {interaction.user.display_name} attempted to execute a command however did not have the correct permissions.')
         else:
             # Handle other errors
             if interaction.response.is_done():
                 await interaction.followup.send(f"An error occurred: {str(error)}", ephemeral=True)
             else:
                 await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
-            print(f"Error in command: {str(error)}")
+            logger.error(f'Error in command: {str(error)}')
         
-    @app_commands.command(name="info", description="Check the bot's latency")
+    @app_commands.command(name="info", description="Check the bot's uptime and latency")
     @app_commands.checks.has_any_role('Bandits Admins') 
     async def ping(self, interaction: discord.Interaction):
         latency = round(self.bot.latency * 1000)
@@ -41,20 +42,7 @@ class UtilityCommands(commands.Cog):
         embed.add_field(name="Latency", value=str(latency), inline=True)
         embed.add_field(name="Uptime", value=uptime_str + "ms", inline=True)
         await interaction.response.send_message(embed=embed)
-        
-    @app_commands.command(name="botinfo", description="Get information about the bot")
-    @app_commands.checks.has_any_role('SillyMonkey') 
-    async def botinfo(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="Bandit Bot Info",
-            color=banditColor
-        )
-        
-        embed.add_field(name="Python Version", value=platform.python_version(), inline=True)
-        embed.add_field(name="Discord.py Version", value=discord.__version__, inline=True)
-        embed.add_field(name="Servers", value=str(len(self.bot.guilds)), inline=True)
-        
-        await interaction.response.send_message(embed=embed)
+        logger.info(f'User {interaction.user.display_name} requested the Bot\'s uptime and latency')
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])
