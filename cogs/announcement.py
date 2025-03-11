@@ -18,8 +18,8 @@ class AnnouncementModal(discord.ui.Modal, title="Send an Announcement"):
         options=[
             discord.SelectOption(label="important", description="", emoji="📝", value="important"),
             discord.SelectOption(label="general", description="", emoji="📝", value="general")
-        ],
-        required=True
+        ]
+        #required=True
     )
 
     #Tag everyone?
@@ -28,16 +28,16 @@ class AnnouncementModal(discord.ui.Modal, title="Send an Announcement"):
         options=[
             discord.SelectOption(label="Yes", description="You will be tagging everyone in the server", emoji="❓", value="affirm"),
             discord.SelectOption(label="No", description="You will NOT be tagging everyone in teh server", emoji="❓", value="negative")
-        ],
-        required=True
+        ]
+        #required=True
     )
 
     #Text input for the announcement
     announceMsg = discord.ui.TextInput(
         label="Your announcement message",
         placeholder="Provide a message...",
-        style=discord.TextStyle.paragraph,
-        required=True
+        style=discord.TextStyle.paragraph
+       # required=True
     )
 
     def __init__(self, bot):
