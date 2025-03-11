@@ -121,7 +121,7 @@ class announcementCommand(commands.Cog):
     @app_commands.command(name="announce", description="Announce a message to the world!")
     @app_commands.checks.has_any_role('Bandits Admins')
     async def announce(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(AnnouncementModal())
+        await interaction.response.send_modal(AnnouncementModal(self.bot))
 
 
 
