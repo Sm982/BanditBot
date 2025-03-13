@@ -6,7 +6,7 @@ from discord import Select, View, Modal,TextInput
 from logger import logger
 import time
 
-# Plan for the bot is to have ephemeral select drop down menus as ephemeral and then 
+
 
 class announcementCommand(commands.Cog):
     def __init__(self,bot):
@@ -138,13 +138,7 @@ class announcementCommand(commands.Cog):
     @app_commands.command(name="announce", description="Announce a message to the world!")
     @app_commands.checks.has_any_role('Bandits Admins')
     async def announce(self, interaction: discord.Interaction):
-        # Start the announcement creation process
-        await interaction.response.send_message(
-            "Let's create an announcement. First, select a channel:",
-            view=self.ChannelSelectView(self),
-            ephemeral=True
-        )
-        
+
 
 
 
