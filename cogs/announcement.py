@@ -2,7 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord import Color
-# Correct imports
 from discord import SelectOption, TextStyle
 from discord.ui import Select, View, Modal, TextInput
 from logger import logger
@@ -13,6 +12,7 @@ class announcementCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.start_time = time.time()
+        # Channel IDs are available on the bot object, not directly on the cog
 
     global banditColor
     banditColor = 0x0a8888
@@ -22,7 +22,7 @@ class announcementCommand(commands.Cog):
             super().__init__(timeout=60)
             self.cog = cog
             
-            # This needs to be inside the __init__ method
+            # Create dropdown with channel options
             self.channel_select = Select(
                 placeholder="Please select an option...",
                 min_values=1,
@@ -39,8 +39,12 @@ class announcementCommand(commands.Cog):
             self.add_item(self.channel_select)
         
         async def channel_selected(self, interaction: discord.Interaction):
+            # Get the attribute name from the selection
             selected_channel_attr = self.channel_select.values[0]
-            self.selected_channel_id = getattr(self.cog, selected_channel_attr)
+            
+            # Get the actual channel ID from the bot object (not the cog)
+            self.selected_channel_id = getattr(self.cog.bot, selected_channel_attr)
+            
             await interaction.response.send_message(
                 "You selected a channel. Now decide if you want to annoy everyone:", 
                 view=announcementCommand.MentionSelectView(self.cog, self.selected_channel_id), 
@@ -51,7 +55,7 @@ class announcementCommand(commands.Cog):
         def __init__(self, cog, selected_channel_id):
             super().__init__(timeout=60)
             self.cog = cog
-            self.selected_channel_id = selected_channel_id  # Missing assignment here
+            self.selected_channel_id = selected_channel_id
 
             self.mention_select = Select(
                 placeholder="Please choose an option...",
@@ -73,7 +77,6 @@ class announcementCommand(commands.Cog):
                 announcementCommand.AnnouncementModal(self.cog, self.selected_channel_id, selected_mention)
             )
     
-    # AnnouncementModal should not be nested inside MentionSelectView
     class AnnouncementModal(Modal):
         def __init__(self, cog, channel_id, mention_type):
             super().__init__(title="Create Announcement")
@@ -114,13 +117,13 @@ class announcementCommand(commands.Cog):
             embed = discord.Embed(
                 title=self.title_input.value,
                 description=self.content_input.value,
-                color=Color.blue()
+                color=Color(banditColor)  # Using your custom color
             )
             embed.set_footer(text=f"Announcement by {interaction.user.display_name}")
         
             # Prepare mention string
             mention_str = ""
-            if self.mention_type == "tageveryone":  # Fixed to match the value from dropdown
+            if self.mention_type == "tageveryone":
                 mention_str = "@everyone"
             elif self.mention_type == "here":
                 mention_str = "@here"
@@ -147,7 +150,6 @@ class announcementCommand(commands.Cog):
     @app_commands.command(name="announce", description="Announce a message to the world!")
     @app_commands.checks.has_any_role('Bandits Admins')
     async def announce(self, interaction: discord.Interaction):
-        # This was the missing implementation that caused the IndentationError
         await interaction.response.send_message(
             "Let's create an announcement. First, select a channel:",
             view=self.ChannelSelectView(self),
