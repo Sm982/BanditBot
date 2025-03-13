@@ -13,6 +13,9 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD_ID = int(os.getenv('DISCORD_GUILD'))
 LOGS_CHANNEL_ID = int(os.getenv('DISCORD_GUILD_LOGS_CHANNEL'))
 EVENTS_CHANNEL_ID = int(os.getenv('DISCORD_EVENTS_CHANNEL'))
+GENERAL_CHANNEL_ID = int(os.getenv('DISCORD_GENERAL_CHANNEL'))
+SUPERSECRET_CHANNEL_ID = int(os.getenv('DISCORD_SUPERS_CHANNEL'))
+SECRET_CHANNEL_ID = int(os.getenv('DISCORD_SECRET_CHANNEL'))
 
 class BanditBot(commands.Bot):
     def __init__(self):
@@ -24,6 +27,9 @@ class BanditBot(commands.Bot):
         self.guild_id = GUILD_ID
         self.logs_channel_id = LOGS_CHANNEL_ID
         self.events_channel_id = EVENTS_CHANNEL_ID
+        self.general_channel_id = GENERAL_CHANNEL_ID #
+        self.supersecret_general_channel_id = SUPERSECRET_CHANNEL_ID
+        self.secret_general_channel_id = SECRET_CHANNEL_ID
         self.logs_channel = None
         self.events_channel = None
         
@@ -77,6 +83,36 @@ class BanditBot(commands.Bot):
         except Exception as e:
             logger.error(f'Error syncing event channel - {e}')
         #END setup events channel
+
+        # Setup general channel
+        try:
+            self.general_channel = self.get_channel(self.general_channel_id)
+            if self.general_channel is None:
+                self.general_channel = await self.fetch_channel(self.general_channel_id)
+            logger.info(f'Synced to events channel: {self.general_channel.name}')
+        except Exception as e:
+            logger.error(f'Error syncing event channel - {e}')
+        #END setup general channel
+
+         # Setup supersecret_general channel
+        try:
+            self.supersecret_general = self.get_channel(self.supersecret_general_channel_id)
+            if self.supersecret_general is None:
+                self.supersecret_general = await self.fetch_channel(self.supersecret_general_channel_id)
+            logger.info(f'Synced to events channel: {self.supersecret_general.name}')
+        except Exception as e:
+            logger.error(f'Error syncing event channel - {e}')
+        #END setup supersecret_general channel
+
+        # Setup supersecret_general channel
+        try:
+            self.secret_general_channel = self.get_channel(self.secret_general_channel_id)
+            if self.secret_general_channel is None:
+                self.secret_general_channel = await self.fetch_channel(self.secret_general_channel_id)
+            logger.info(f'Synced to events channel: {self.secret_general_channel.name}')
+        except Exception as e:
+            logger.error(f'Error syncing event channel - {e}')
+        #END setup supersecret_general channel
             
     async def on_message(self, message):
         if message.author == self.user:

@@ -2,99 +2,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord import Color
+from discord import Select, View, Modal,TextInput
 from logger import logger
 import time
-
-# Plan for the bot is to have a modal with a list of channels to announce
-# inside of. Option to tag everyone or not
-# text box with message
-
-class AnnouncementModal(discord.ui.Modal, title="Send an Announcement"):
-
-
-    #Channel list
-    channelList = discord.ui.Select(
-        placeholder="Choose a channel",
-        options=[
-            discord.SelectOption(label="important", description="", emoji="📝", value="important"),
-            discord.SelectOption(label="general", description="", emoji="📝", value="general")
-        ]
-        #required=True
-    )
-
-    #Tag everyone?
-    everyoneQuestion = discord.ui.Select(
-        placeholder="Would you like to tag everyone or not?",
-        options=[
-            discord.SelectOption(label="Yes", description="You will be tagging everyone in the server", emoji="❓", value="affirm"),
-            discord.SelectOption(label="No", description="You will NOT be tagging everyone in teh server", emoji="❓", value="negative")
-        ]
-        #required=True
-    )
-
-    #Text input for the announcement
-    announceMsg = discord.ui.TextInput(
-        label="Your announcement message",
-        placeholder="Provide a message...",
-        style=discord.TextStyle.paragraph
-       # required=True
-    )
-
-    def __init__(self, bot):
-        super().__init__()
-        self.bot = bot
-        self.add_item(self.channelList)
-        self.add_item(self.everyoneQuestion)
-        self.add_item(self.announceMsg)
-
-    async def on_submit(self, interaction: discord.Interaction):
-        selected_channel = self.channelList.values[0]
-        selected_everyone = self.everyoneQuestion.values[0]
-        announce_text = self.announceMsg.value
-
-        await interaction.response.send_message(
-            f"Your announcement has been sent!\n"
-            f"Selected Channel: {selected_channel}\n"
-            f"Tagging everyone? {selected_everyone}\n"
-            f"Announcement message: {announce_text}",
-            ephemeral=True
-        )
-
-        embed = discord.Embed(
-            title="Announcement!!",
-            description=f"{announce_text}",
-            color=banditColor
-        )
-        try:
-            match selected_channel:
-                case "important":
-                    channel = await self.bot.fetch_channel(1044403663357104178)
-                    await channel.send("@everyone", embed=embed)
-                case "general":
-                    channel = await self.bot.fetch_channel(1044403663357104184)
-                    await channel.send("@everyone", embed=embed)
-        except discord.errors.NotFound:
-            # This handles if the channel doesn't exist
-            logger.error(f"Channel with ID {channel_id} not found")
-            await interaction.followup.send(
-                f"Error: Could not find the channel to send the announcement to.",
-                ephemeral=True
-            )
-        except discord.errors.Forbidden:
-            # This handles if the bot doesn't have permission
-            logger.error(f"Bot doesn't have permission to send messages in channel {channel_id}")
-            await interaction.followup.send(
-                f"Error: I don't have permission to send messages in that channel.",
-                ephemeral=True
-            )
-        except Exception as e:
-            # General exception handler for any other issues
-            logger.error(f"Error sending announcement: {str(e)}")
-            await interaction.followup.send(
-                f"An unexpected error occurred while sending the announcement: {str(e)}",
-                ephemeral=True
-            )
-
 
 
 
@@ -105,7 +15,114 @@ class announcementCommand(commands.Cog):
 
     global banditColor
     banditColor = 0x0a8888
+    
+    class ChannelSelectView(View):
+        def __init__(self, cog):
+            super().__init__(timeout=60)
+            self.cog = cog
+            
+        self.channel_select = Select(
+            placeholder="Please select an option...",
+            min_values=1,
+            max_values=1,
+            options=[
+                discord.SelectOption(label="General", description="Main General Channel", emoji="", value=f"{self.general_channel_id}"),
+                discord.SelectOption(label="Events", description="Main Events Channel", emoji="", value=f"{self.events_channel_id}"),
+                discord.SelectOption(label="SMGeneral", description="Admin Chat Channel", emoji="", value=f"{self.supersecret_general_channel_id}"),
+                discord.SelectOption(label="MGeneral", description="Mods Chat Channel", emoji="", value=f"{self.secret_general_channel_id}")
+            ]
+        )
+        
+        self.channel_select.callback = self.channel_selected
+        self.add_item(self.channel_select)
+        
+        async def channel_selected(self, interaction: discord.Interaction):
+            selected_chanel_attr= self.channel_select.values[0]
+            self.selected_channel_id = getattr(self.cog, selected_chanel_attr)
+            await interaction.response.send_message("fYou selected a channel. Now decide if you want to annoy everyone:", view=announcementCommand.MentionSelectView(self.cog, self.selected_channel_id), ephemeral=True)
 
+    class MentionSelectView(View):
+        def __init__(self, cog, selected_channel_id):
+            super().__init__(timeout=60)
+            self.cog = cog
+            self.selected_channel_id
+
+            self.mention_select = Select(
+                placeholder="Please choose an option...",
+                min_values=1,
+                max_values=1,
+                options=[
+                    discord.SelectOption(label="No mentions", description="Don't tag everyone", emoji="", value="notag"),
+                    discord.SelectOption(label="@everyone", description="Tag everyone in the server", emoji="", value="tageveryone"),
+                    discord.SelectOption(label="@here", description="Tag active members only", emoji="", value="here")
+                ]
+            )
+
+            self.mention_select.callback = self.mention_selected
+            self.add_item(self.mention_select)
+
+        async def mention_selected(self, interaction: discord.Interaction):
+            selected_mention = self.mention_select.values[0]
+            await interaction.response.send_modal(
+                announcementCommand.AnnouncementModal(self.cog, self.selected_channel_id, selected_mention)
+            )
+        
+        class AnnouncementModal(Modal):
+            def __init__(self, cog, channel_id, mention_type):
+                super().__init__(title="Create Announcement")
+                self.cog = cog
+                self.channel_id = channel_id
+                self.mention_type = mention_type
+
+                 # Title input
+                self.title_input = TextInput(
+                    label="Announcement Title",
+                    placeholder="Enter a title for your announcement",
+                    style=discord.TextStyle.short,
+                    required=True,
+                    max_length=100
+                )
+            
+                # Content input - multiline for longer messages
+                self.content_input = TextInput(
+                    label="Announcement Content",
+                    placeholder="Enter the full announcement message here",
+                    style=discord.TextStyle.long,
+                    required=True,
+                    max_length=2000
+                )
+            
+                # Add inputs to the modal
+                self.add_item(self.title_input)
+                self.add_item(self.content_input)
+            async def on_submit(self, interaction: discord.Interaction):
+                channel = self.cog.bot.get_channel(self.channel_id)
+
+                if not channel:
+                    await interaction.response.send_message("Could not find the selected channel.", ephemeral=True)
+                    return
+                # Create embed
+                embed = discord.Embed(
+                    title=self.title_input.value,
+                    description=self.content_input.value,
+                    color=discord.Color.blue()
+                )
+                embed.set_footer(text=f"Announcement by {interaction.user.display_name}")
+            
+                # Prepare mention string
+                mention_str = ""
+                if self.mention_type == "everyone":
+                    mention_str = "@everyone"
+                elif self.mention_type == "here":
+                    mention_str = "@here"
+            
+                # Send confirmation to user
+                await interaction.response.send_message(
+                    f"Your announcement has been sent to the selected channel!",
+                    ephemeral=True
+                )
+                await channel.send(content=mention_str, embed=embed)
+        
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
             await interaction.response.send_message("You do NOT have the required role to use this command.", ephemeral=True)
@@ -121,7 +138,7 @@ class announcementCommand(commands.Cog):
     @app_commands.command(name="announce", description="Announce a message to the world!")
     @app_commands.checks.has_any_role('Bandits Admins')
     async def announce(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(AnnouncementModal(self.bot))
+
 
 
 
