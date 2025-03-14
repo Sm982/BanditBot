@@ -28,10 +28,10 @@ class announcementCommand(commands.Cog):
                 min_values=1,
                 max_values=1,
                 options=[
-                    SelectOption(label="General", description="Main General Channel", value="general_channel_id"),
-                    SelectOption(label="Events", description="Main Events Channel", value="events_channel_id"),
-                    SelectOption(label="SMGeneral", description="Admin Chat Channel", value="supersecret_general_channel_id"),
-                    SelectOption(label="MGeneral", description="Mods Chat Channel", value="secret_general_channel_id")
+                    SelectOption(label="General", description="General Chat", emoji="📱", value="general_channel_id"),
+                    SelectOption(label="Events", description="Important", emoji="📢", value="events_channel_id"),
+                    SelectOption(label="SMGeneral", description="admin-chat", value="supersecret_general_channel_id"),
+                    SelectOption(label="MGeneral", description="mods-chat", value="secret_general_channel_id")
                 ]
             )
             
@@ -62,9 +62,9 @@ class announcementCommand(commands.Cog):
                 min_values=1,
                 max_values=1,
                 options=[
-                    SelectOption(label="No mentions", description="Don't tag everyone", value="notag"),
-                    SelectOption(label="@everyone", description="Tag everyone in the server", value="tageveryone"),
-                    SelectOption(label="@here", description="Tag active members only", value="here")
+                    SelectOption(label="No mentions", description="Don't tag everyone", emoji="🔕", value="notag"),
+                    SelectOption(label="@everyone", description="Tag everyone in the server", emoji="🔔", value="tageveryone"),
+                    SelectOption(label="@here", description="Tag active members only", emoji="🔔", value="here")
                 ]
             )
 
@@ -115,11 +115,11 @@ class announcementCommand(commands.Cog):
                 
             # Create embed
             embed = discord.Embed(
-                title=self.title_input.value,
-                description=self.content_input.value,
-                color=Color(banditColor)  # Using your custom color
+                title="Announcement!",
+                color=Color(banditColor)
             )
-            embed.set_footer(text=f"Announcement by {interaction.user.display_name}")
+            embed.add_field(name=f"# **{self.title_input.value}**", value=f"{self.content_input.value}", inline=True)
+            embed.set_footer(text=f'{interaction.user.display_name}', icon_url=f'{interaction.user.display_avatar.url}')
         
             # Prepare mention string
             mention_str = ""
@@ -134,6 +134,7 @@ class announcementCommand(commands.Cog):
                 ephemeral=True
             )
             await channel.send(content=mention_str, embed=embed)
+            logger.info(f'User {interaction.user.display_name} sent the announcement command with destination {self.channel_selected}')
         
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
@@ -151,7 +152,7 @@ class announcementCommand(commands.Cog):
     @app_commands.checks.has_any_role('Bandits Admins')
     async def announce(self, interaction: discord.Interaction):
         await interaction.response.send_message(
-            "Let's create an announcement. First, select a channel:",
+            "Let's create an announcement! First, select a channel:",
             view=self.ChannelSelectView(self),
             ephemeral=True
         )
