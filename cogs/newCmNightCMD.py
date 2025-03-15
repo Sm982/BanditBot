@@ -220,7 +220,7 @@ class cmNightCommand(commands.Cog):
             await interaction.response.send_message("Community night announcement has been posted!", ephemeral=True)
             logger.info(f'User {interaction.user.display_name} sent the command Community Night')
 
-    @app_commands.command(name="cmnight", description="Create a community night announcement")
+    @app_commands.command(name="communitynight", description="Create a community night announcement")
     async def cm_night(self, interaction: discord.Interaction):
         await interaction.response.send_message(
             "Let's set up a community night! First, select who you'd like to notify.",

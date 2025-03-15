@@ -118,7 +118,7 @@ class announcementCommand(commands.Cog):
                 title="Announcement!",
                 color=Color(banditColor)
             )
-            embed.add_field(name=f"# **{self.title_input.value}**", value=f"{self.content_input.value}", inline=True)
+            embed.add_field(name=f"**{self.title_input.value}**", value=f"{self.content_input.value}", inline=True)
             embed.set_footer(text=f'{interaction.user.display_name}', icon_url=f'{interaction.user.display_avatar.url}')
         
             # Prepare mention string
