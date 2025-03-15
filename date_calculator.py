@@ -37,11 +37,19 @@ def dateCalculator(day_type, time_type):
     hour = int(hour)
     minute = int(minute) if minute else 0
     
+    # Validate hour before conversion
+    if hour < 1 or hour > 12:
+        raise ValueError(f"Hour must be between 1 and 12: {hour}")
+    
     # Convert to 24-hour format
     if am_pm.lower() == 'pm' and hour != 12:
         hour += 12
     elif am_pm.lower() == 'am' and hour == 12:
         hour = 0
+    
+    # Double-check hour is now valid for datetime (0-23)
+    if hour < 0 or hour > 23:
+        raise ValueError(f"Converted hour must be between 0 and 23: {hour}")
     
     # Get the current date and time
     now = datetime.datetime.now()
