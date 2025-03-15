@@ -1,18 +1,12 @@
 import datetime
 import time
 import re
+import pytz
 
 def dateCalculator(day_type, time_type):
-    """
-    Calculate the epoch time for the next occurrence of the specified day and time.
+    # Set Brisbane timezone
+    brisbane_tz = pytz.timezone('Australia/Brisbane')
     
-    Args:
-        day_type (str): Day of the week (monday, tuesday, etc.)
-        time_type (str): Time in format like "7pm", "12am", "1230pm", etc.
-    
-    Returns:
-        int: Epoch timestamp for the specified day and time
-    """
     # Convert day_type to a day number (0 = Monday, 6 = Sunday)
     days = {
         "monday": 0,
@@ -51,30 +45,26 @@ def dateCalculator(day_type, time_type):
     if hour < 0 or hour > 23:
         raise ValueError(f"Converted hour must be between 0 and 23: {hour}")
     
-    # Get the current date and time
-    now = datetime.datetime.now()
+    # Get the current date and time in Brisbane timezone
+    now = datetime.datetime.now(brisbane_tz)
     current_weekday = now.weekday()
     
     # Calculate days to add to reach the target day
     days_ahead = target_day - current_weekday
-    if days_ahead <= 0:  # Target day has already occurred this week
+    if days_ahead < 0:  # Target day has already occurred this week
         days_ahead += 7
+    elif days_ahead == 0:  # Today is the target day
+        # Create a datetime for today with the target hour and minute
+        today_target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        # If target time is already past, schedule for next week
+        if today_target <= now:
+            days_ahead = 7
     
     # Create the target datetime
     target_date = now + datetime.timedelta(days=days_ahead)
-    target_datetime = datetime.datetime(
-        year=target_date.year,
-        month=target_date.month,
-        day=target_date.day,
-        hour=hour,
-        minute=minute
-    )
+    target_datetime = target_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
     
-    # If the target time today is already past, move to next week
-    if target_day == current_weekday and target_datetime <= now:
-        target_datetime += datetime.timedelta(days=7)
-    
-    # Convert to epoch time
+    # Convert to epoch time (UTC timestamp)
     epoch_time = int(target_datetime.timestamp())
     
     return epoch_time
