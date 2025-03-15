@@ -45,80 +45,96 @@ class cmNightCommand(commands.Cog):
         async def mention_selected(self, interaction: discord.Interaction):
             selected_mention = self.mention_select.values[0]
             await interaction.response.send_message(
-                "You've selected who you want to annoy. Now decide what time.",
-                view=cmNightCommand.TimeSelectView(self.cog, selected_mention)
+                "You've selected who you want to annoy. Now decide the hour.",
+                view=cmNightCommand.HourSelectView(self.cog, selected_mention),
+                ephemeral=True
             )
-            
-    class TimeSelectView(View):
+    
+    class HourSelectView(View):
         def __init__(self, cog, selected_mention):
             super().__init__(timeout=60)
             self.cog = cog
             self.selected_mention = selected_mention
             
-            self.time_select = Select(
-                placeholder="Please choose an option...",
+            self.hour_select = Select(
+                placeholder="Please choose the hour...",
                 min_values=1,
                 max_values=1,
                 options=[
-                    SelectOption(label="12:00am", description="Event starts at 12:00am Brisbane Time", emoji="🕒", value="12am"),
-                    SelectOption(label="12:30am", description="Event starts at 12:30am Brisbane Time", emoji="🕒", value="1230am"),
-                    SelectOption(label="1:00am", description="Event starts at 1:00am Brisbane Time", emoji="🕒", value="1am"),
-                    SelectOption(label="1:30am", description="Event starts at 1:30am Brisbane Time", emoji="🕒", value="130am"),
-                    SelectOption(label="2:00am", description="Event starts at 2:00am Brisbane Time", emoji="🕒", value="2am"),
-                    SelectOption(label="2:30am", description="Event starts at 2:30am Brisbane Time", emoji="🕒", value="230am"),
-                    SelectOption(label="3:00am", description="Event starts at 3:00am Brisbane Time", emoji="🕒", value="3am"),
-                    SelectOption(label="3:30am", description="Event starts at 3:30am Brisbane Time", emoji="🕒", value="330am"),
-                    SelectOption(label="4:00am", description="Event starts at 4:00am Brisbane Time", emoji="🕒", value="4am"),
-                    SelectOption(label="4:30am", description="Event starts at 4:30am Brisbane Time", emoji="🕒", value="430am"),
-                    SelectOption(label="5:00am", description="Event starts at 5:00am Brisbane Time", emoji="🕒", value="5am"),
-                    SelectOption(label="5:30am", description="Event starts at 5:30am Brisbane Time", emoji="🕒", value="530am"),
-                    SelectOption(label="6:00am", description="Event starts at 6:00am Brisbane Time", emoji="🕒", value="6am"),
-                    SelectOption(label="6:30am", description="Event starts at 6:30am Brisbane Time", emoji="🕒", value="630am"),
-                    SelectOption(label="7:00am", description="Event starts at 7:00am Brisbane Time", emoji="🕒", value="7am"),
-                    SelectOption(label="7:30am", description="Event starts at 7:30am Brisbane Time", emoji="🕒", value="730am"),
-                    SelectOption(label="8:00am", description="Event starts at 8:00am Brisbane Time", emoji="🕒", value="8am"),
-                    SelectOption(label="8:30am", description="Event starts at 8:30am Brisbane Time", emoji="🕒", value="830am"),
-                    SelectOption(label="9:00am", description="Event starts at 9:00am Brisbane Time", emoji="🕒", value="9am"),
-                    SelectOption(label="9:30am", description="Event starts at 9:30am Brisbane Time", emoji="🕒", value="930am"),
-                    SelectOption(label="10:00am", description="Event starts at 10:00am Brisbane Time", emoji="🕒", value="10am"),
-                    SelectOption(label="10:30am", description="Event starts at 10:30am Brisbane Time", emoji="🕒", value="1030am"),
-                    SelectOption(label="11:00am", description="Event starts at 11:00am Brisbane Time", emoji="🕒", value="11am"),
-                    SelectOption(label="11:30am", description="Event starts at 11:30am Brisbane Time", emoji="🕒", value="1130am"),
-                    SelectOption(label="12:00pm", description="Event starts at 12:00pm Brisbane Time", emoji="🕒", value="12pm"),
-                    SelectOption(label="12:30pm", description="Event starts at 12:30pm Brisbane Time", emoji="🕒", value="1230pm"),
-                    SelectOption(label="1:00pm", description="Event starts at 1:00pm Brisbane Time", emoji="🕒", value="1pm"),
-                    SelectOption(label="1:30pm", description="Event starts at 1:30pm Brisbane Time", emoji="🕒", value="130pm"),
-                    SelectOption(label="2:00pm", description="Event starts at 2:00pm Brisbane Time", emoji="🕒", value="2pm"),
-                    SelectOption(label="2:30pm", description="Event starts at 2:30pm Brisbane Time", emoji="🕒", value="230pm"),
-                    SelectOption(label="3:00pm", description="Event starts at 3:00pm Brisbane Time", emoji="🕒", value="3pm"),
-                    SelectOption(label="3:30pm", description="Event starts at 3:30pm Brisbane Time", emoji="🕒", value="330pm"),
-                    SelectOption(label="4:00pm", description="Event starts at 4:00pm Brisbane Time", emoji="🕒", value="4pm"),
-                    SelectOption(label="4:30pm", description="Event starts at 4:30pm Brisbane Time", emoji="🕒", value="430pm"),
-                    SelectOption(label="5:00pm", description="Event starts at 5:00pm Brisbane Time", emoji="🕒", value="5pm"),
-                    SelectOption(label="5:30pm", description="Event starts at 5:30pm Brisbane Time", emoji="🕒", value="530pm"),
-                    SelectOption(label="6:00pm", description="Event starts at 6:00pm Brisbane Time", emoji="🕒", value="6pm"),
-                    SelectOption(label="6:30pm", description="Event starts at 6:30pm Brisbane Time", emoji="🕒", value="630pm"),
-                    SelectOption(label="7:00pm", description="Event starts at 7:00pm Brisbane Time", emoji="🕒", value="7pm"),
-                    SelectOption(label="7:30pm", description="Event starts at 7:30pm Brisbane Time", emoji="🕒", value="730pm"),
-                    SelectOption(label="8:00pm", description="Event starts at 8:00pm Brisbane Time", emoji="🕒", value="8pm"),
-                    SelectOption(label="8:30pm", description="Event starts at 8:30pm Brisbane Time", emoji="🕒", value="830pm"),
-                    SelectOption(label="9:00pm", description="Event starts at 9:00pm Brisbane Time", emoji="🕒", value="9pm"),
-                    SelectOption(label="9:30pm", description="Event starts at 9:30pm Brisbane Time", emoji="🕒", value="930pm"),
-                    SelectOption(label="10:00pm", description="Event starts at 10:00pm Brisbane Time", emoji="🕒", value="10pm"),
-                    SelectOption(label="10:30pm", description="Event starts at 10:30pm Brisbane Time", emoji="🕒", value="1030pm"),
-                    SelectOption(label="11:00pm", description="Event starts at 11:00pm Brisbane Time", emoji="🕒", value="11pm"),
-                    SelectOption(label="11:30pm", description="Event starts at 11:30pm Brisbane Time", emoji="🕒", value="1130pm")
+                    SelectOption(label="12 AM", description="12 Midnight", emoji="🕛", value="12am"),
+                    SelectOption(label="1 AM", description="1 in the morning", emoji="🕐", value="1am"),
+                    SelectOption(label="2 AM", description="2 in the morning", emoji="🕑", value="2am"),
+                    SelectOption(label="3 AM", description="3 in the morning", emoji="🕒", value="3am"),
+                    SelectOption(label="4 AM", description="4 in the morning", emoji="🕓", value="4am"),
+                    SelectOption(label="5 AM", description="5 in the morning", emoji="🕔", value="5am"),
+                    SelectOption(label="6 AM", description="6 in the morning", emoji="🕕", value="6am"),
+                    SelectOption(label="7 AM", description="7 in the morning", emoji="🕖", value="7am"),
+                    SelectOption(label="8 AM", description="8 in the morning", emoji="🕗", value="8am"),
+                    SelectOption(label="9 AM", description="9 in the morning", emoji="🕘", value="9am"),
+                    SelectOption(label="10 AM", description="10 in the morning", emoji="🕙", value="10am"),
+                    SelectOption(label="11 AM", description="11 in the morning", emoji="🕚", value="11am"),
+                    SelectOption(label="12 PM", description="12 Noon", emoji="🕛", value="12pm"),
+                    SelectOption(label="1 PM", description="1 in the afternoon", emoji="🕐", value="1pm"),
+                    SelectOption(label="2 PM", description="2 in the afternoon", emoji="🕑", value="2pm"),
+                    SelectOption(label="3 PM", description="3 in the afternoon", emoji="🕒", value="3pm"),
+                    SelectOption(label="4 PM", description="4 in the afternoon", emoji="🕓", value="4pm"),
+                    SelectOption(label="5 PM", description="5 in the afternoon", emoji="🕔", value="5pm"),
+                    SelectOption(label="6 PM", description="6 in the evening", emoji="🕕", value="6pm"),
+                    SelectOption(label="7 PM", description="7 in the evening", emoji="🕖", value="7pm"),
+                    SelectOption(label="8 PM", description="8 in the evening", emoji="🕗", value="8pm"),
+                    SelectOption(label="9 PM", description="9 in the evening", emoji="🕘", value="9pm"),
+                    SelectOption(label="10 PM", description="10 in the evening", emoji="🕙", value="10pm"),
+                    SelectOption(label="11 PM", description="11 in the evening", emoji="🕚", value="11pm"),
                 ]
             )
             
-            self.time_select.callback = self.time_selected
-            self.add_item(self.time_select)
+            self.hour_select.callback = self.hour_selected
+            self.add_item(self.hour_select)
             
-        async def time_selected(self, interaction: discord.Interaction):
-            selected_time = self.time_select.values[0]
+        async def hour_selected(self, interaction: discord.Interaction):
+            selected_hour = self.hour_select.values[0]
+            await interaction.response.send_message(
+                "Now select the minutes.",
+                view=cmNightCommand.MinuteSelectView(self.cog, self.selected_mention, selected_hour),
+                ephemeral=True
+            )
+    
+    class MinuteSelectView(View):
+        def __init__(self, cog, selected_mention, selected_hour):
+            super().__init__(timeout=60)
+            self.cog = cog
+            self.selected_mention = selected_mention
+            self.selected_hour = selected_hour
+            
+            self.minute_select = Select(
+                placeholder="Please choose minutes...",
+                min_values=1,
+                max_values=1,
+                options=[
+                    SelectOption(label="00", description="On the hour", emoji="🕒", value="00"),
+                    SelectOption(label="30", description="Half past the hour", emoji="🕒", value="30")
+                ]
+            )
+            
+            self.minute_select.callback = self.minute_selected
+            self.add_item(self.minute_select)
+            
+        async def minute_selected(self, interaction: discord.Interaction):
+            selected_minute = self.minute_select.values[0]
+            
+            # Combine hour and minute to form time value
+            hour_base = self.selected_hour[:-2]  # Remove 'am' or 'pm'
+            am_pm = self.selected_hour[-2:]      # Get 'am' or 'pm'
+            
+            if selected_minute == "00":
+                time_value = self.selected_hour  # Just use hour if minutes are 00
+            else:
+                time_value = f"{hour_base}{selected_minute}{am_pm}"  # e.g., 1230pm
+            
             await interaction.response.send_message(
                 "You've now selected a time. Now decide what day.",
-                view=cmNightCommand.DaySelectView(self.cog, self.selected_mention, selected_time)
+                view=cmNightCommand.DaySelectView(self.cog, self.selected_mention, time_value),
+                ephemeral=True
             )
             
     class DaySelectView(View):
@@ -185,7 +201,6 @@ class cmNightCommand(commands.Cog):
                 description="It's TheBanditWombat's weekly Community Night!",
                 color=banditColor
             )
-            
             
             epochtime = dateCalculator(self.day_type, self.time_type)
             

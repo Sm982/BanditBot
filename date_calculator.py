@@ -1,82 +1,72 @@
 import datetime
-import pytz
 import time
 import re
-from logger import logger
 
 def dateCalculator(day_type, time_type):
     """
-    Calculate epoch time based on day and time selection.
+    Calculate the epoch time for the next occurrence of the specified day and time.
     
     Args:
-        day_type (str): Day of the week (e.g., "monday", "tuesday")
-        time_type (str): Time in format like "1230pm", "8am", "11pm"
+        day_type (str): Day of the week (monday, tuesday, etc.)
+        time_type (str): Time in format like "7pm", "12am", "1230pm", etc.
     
     Returns:
         int: Epoch timestamp for the specified day and time
     """
-    # Initialize timezone
-    timezone = pytz.timezone("Australia/Brisbane")
-    today = datetime.datetime.now(timezone).date()
+    # Convert day_type to a day number (0 = Monday, 6 = Sunday)
+    days = {
+        "monday": 0,
+        "tuesday": 1,
+        "wednesday": 2,
+        "thursday": 3,
+        "friday": 4,
+        "saturday": 5,
+        "sunday": 6
+    }
+    target_day = days.get(day_type.lower())
     
-    # Parse the time string
-    # Extract hours, minutes, and AM/PM
-    time_pattern = re.compile(r'(\d+)(?::?(\d+))?([ap]m)', re.IGNORECASE)
-    match = time_pattern.match(time_type)
+    # Parse the time_type to extract hours, minutes, and AM/PM
+    # Handle formats like "7pm", "12am", "1230pm", etc.
+    time_pattern = re.compile(r'(\d+)(?:(\d{2}))?([ap]m)', re.IGNORECASE)
+    match = time_pattern.match(time_type.lower())
     
     if not match:
-        logger.error(f"Invalid time format: {time_type}")
-        return 0
+        raise ValueError(f"Invalid time format: {time_type}")
     
-    hours = int(match.group(1))
-    # If minutes are specified, use them; otherwise, use 0
-    minutes = int(match.group(2)) if match.group(2) else 0
-    am_pm = match.group(3).lower()
+    hour, minute, am_pm = match.groups()
+    hour = int(hour)
+    minute = int(minute) if minute else 0
     
-    # Convert hours to 24-hour format
-    if am_pm == "pm" and hours != 12:
-        hours += 12
-    elif am_pm == "am" and hours == 12:
-        hours = 0
+    # Convert to 24-hour format
+    if am_pm.lower() == 'pm' and hour != 12:
+        hour += 12
+    elif am_pm.lower() == 'am' and hour == 12:
+        hour = 0
     
-    # Map day name to day index (0 = Monday, 6 = Sunday)
-    days_of_week = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-    try:
-        target_day_index = days_of_week.index(day_type.lower())
-    except ValueError:
-        logger.error(f"Invalid day: {day_type}")
-        return 0
+    # Get the current date and time
+    now = datetime.datetime.now()
+    current_weekday = now.weekday()
     
-    # Calculate days until target day
-    today_index = today.weekday()  # 0 = Monday, 6 = Sunday
-    days_until_next = (target_day_index - today_index) % 7
+    # Calculate days to add to reach the target day
+    days_ahead = target_day - current_weekday
+    if days_ahead <= 0:  # Target day has already occurred this week
+        days_ahead += 7
     
-    # If the event is today and the specified time has already passed,
-    # schedule it for next week
-    if days_until_next == 0:
-        current_time = datetime.datetime.now(timezone)
-        if (hours > current_time.hour or 
-            (hours == current_time.hour and minutes > current_time.minute)):
-            # Today but later
-            next_day_date = today
-        else:
-            # Next week
-            next_day_date = today + datetime.timedelta(days=7)
-    else:
-        next_day_date = today + datetime.timedelta(days=days_until_next)
-    
-    # Create datetime object for the event
-    dt = datetime.datetime(
-        next_day_date.year,
-        next_day_date.month,
-        next_day_date.day,
-        hours,
-        minutes,
-        tzinfo=timezone
+    # Create the target datetime
+    target_date = now + datetime.timedelta(days=days_ahead)
+    target_datetime = datetime.datetime(
+        year=target_date.year,
+        month=target_date.month,
+        day=target_date.day,
+        hour=hour,
+        minute=minute
     )
     
-    # Convert to epoch time
-    epoch = int(dt.timestamp())
+    # If the target time today is already past, move to next week
+    if target_day == current_weekday and target_datetime <= now:
+        target_datetime += datetime.timedelta(days=7)
     
-    logger.info(f'Calculated epoch time as {epoch} for day: {day_type}, time: {time_type}')
-    return epoch
+    # Convert to epoch time
+    epoch_time = int(target_datetime.timestamp())
+    
+    return epoch_time
