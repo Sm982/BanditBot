@@ -19,17 +19,31 @@ def dateCalculator(day_type, time_type):
     }
     target_day = days.get(day_type.lower())
     
-    # Parse the time_type to extract hours, minutes, and AM/PM
-    # Handle formats like "7pm", "12am", "1230pm", etc.
-    time_pattern = re.compile(r'(\d+)(?:(\d{2}))?([ap]m)', re.IGNORECASE)
-    match = time_pattern.match(time_type.lower())
+    # First try to debug what's being received
+    print(f"Input time_type: {time_type}")
     
-    if not match:
-        raise ValueError(f"Invalid time format: {time_type}")
+    # Different pattern to handle various time formats
+    if "am" in time_type.lower() or "pm" in time_type.lower():
+        am_pm = "am" if "am" in time_type.lower() else "pm"
+        # Remove the am/pm suffix to process the numeric part
+        numeric_part = time_type.lower().replace(am_pm, "")
+        
+        # Check the length to determine format
+        if len(numeric_part) <= 2:  # Simple format like "7pm"
+            hour = int(numeric_part)
+            minute = 0
+        elif len(numeric_part) == 3:  # Format like "230pm" (2:30 PM)
+            hour = int(numeric_part[0])
+            minute = int(numeric_part[1:])
+        elif len(numeric_part) == 4:  # Format like "1230pm" (12:30 PM)
+            hour = int(numeric_part[:2])
+            minute = int(numeric_part[2:])
+        else:
+            raise ValueError(f"Invalid time format: {time_type}")
+    else:
+        raise ValueError(f"Missing AM/PM indicator: {time_type}")
     
-    hour, minute, am_pm = match.groups()
-    hour = int(hour)
-    minute = int(minute) if minute else 0
+    print(f"Parsed hour: {hour}, minute: {minute}, am_pm: {am_pm}")
     
     # Validate hour before conversion
     if hour < 1 or hour > 12:
@@ -41,9 +55,7 @@ def dateCalculator(day_type, time_type):
     elif am_pm.lower() == 'am' and hour == 12:
         hour = 0
     
-    # Double-check hour is now valid for datetime (0-23)
-    if hour < 0 or hour > 23:
-        raise ValueError(f"Converted hour must be between 0 and 23: {hour}")
+    print(f"24-hour format: {hour}:{minute}")
     
     # Get the current date and time in Brisbane timezone
     now = datetime.datetime.now(brisbane_tz)
@@ -64,7 +76,10 @@ def dateCalculator(day_type, time_type):
     target_date = now + datetime.timedelta(days=days_ahead)
     target_datetime = target_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
     
+    print(f"Target datetime: {target_datetime}")
+    
     # Convert to epoch time (UTC timestamp)
     epoch_time = int(target_datetime.timestamp())
     
+    print(f"Epoch time: {epoch_time}")
     return epoch_time
