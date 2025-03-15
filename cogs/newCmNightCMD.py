@@ -3,19 +3,20 @@ from discord import app_commands, Color, SelectOption, TextStyle
 from discord.ext import commands
 from discord.ui import Select, View, Modal, TextInput
 from logger import logger
+from date_calculator import dateCalculator
 import time
 
-# Step 1 - Ask user if they'd like to ping everyone, here or no one
-# Step 2 - Ask what time (12am-11pm)
-# Step 3 - Ask what day (Monday-Sunday)
+# Step 1 - Ask user if they'd like to ping everyone, here or no one - yes
+# Step 2 - Ask what time (12am-11pm) - yes
+# Step 3 - Ask what day (Monday-Sunday) - yes
 # Step 4 - Ask in a modal what game they'd like to play
 # Step 5 - Create an embed
 # Step 6 - Buttons after the embed
 # Step 7 - Add a role to the user after clicking button
 # Step 8 - Event loop
 
-class cmNightCommand(commands.cog):
-    def __init(self, bot):
+class cmNightCommand(commands.Cog):
+    def __init__(self, bot):
         self.bot = bot
         self.start_time = time.time()
         
@@ -45,7 +46,7 @@ class cmNightCommand(commands.cog):
             selected_mention = self.mention_select.values[0]
             await interaction.response.send_message(
                 "You've selected who you want to annoy. Now decide what time.",
-                view=cmNightCommand.TimeSelectView(self.cog, self.selected_mention)
+                view=cmNightCommand.TimeSelectView(self.cog, selected_mention)
             )
             
     class TimeSelectView(View):
@@ -114,18 +115,18 @@ class cmNightCommand(commands.cog):
             self.add_item(self.time_select)
             
         async def time_selected(self, interaction: discord.Interaction):
-            time_selected = self.time_select.values[0]
+            selected_time = self.time_select.values[0]
             await interaction.response.send_message(
                 "You've now selected a time. Now decide what day.",
-                view=cmNightCommand.DaySelectView(self.cog, self.selected_mention, self.time_selected)
+                view=cmNightCommand.DaySelectView(self.cog, self.selected_mention, selected_time)
             )
             
     class DaySelectView(View):
-        def __init__(self, cog):
+        def __init__(self, cog, selected_mention, selected_time):
             super().__init__(timeout=60)
             self.cog = cog
             self.selected_mention = selected_mention
-            self.time_selected = time_selected
+            self.selected_time = selected_time
             
             self.day_select = Select(
                 placeholder="Please choose an option...",
@@ -145,4 +146,72 @@ class cmNightCommand(commands.cog):
             self.day_select.callback = self.day_selected
             self.add_item(self.day_select)
             
-        async def day_selected(self, interaction: discord.Interaction)
+        async def day_selected(self, interaction: discord.Interaction):
+            selected_day = self.day_select.values[0]
+
+            await interaction.response.send_modal(
+                cmNightCommand.cmModal(self.cog, self.selected_mention, self.selected_time, selected_day)
+            )
+
+    class cmModal(Modal):
+        def __init__(self, cog, mention_type, time_type, day_type):
+            super().__init__(title="What game are we playing?")
+            self.cog = cog
+            self.mention_type = mention_type
+            self.time_type = time_type
+            self.day_type = day_type
+
+            self.game_input = TextInput(
+                label="Game being played",
+                placeholder="Enter a game for your community night",
+                style=TextStyle.short,
+                required=True,
+                max_length=30
+            )
+
+            self.add_item(self.game_input)
+
+        async def on_submit(self, interaction: discord.Interaction):
+            game_name = self.game_input.value
+            channel = interaction.client.get_channel(self.cog.bot.events_channel_id)
+
+            if not channel:
+                await interaction.response.send_message("Critical error, could not find the selected channel.", ephemeral=True)
+                logger.error("Critical error, could not find the events channel for CM night command")
+                return
+            
+            embed = discord.Embed(
+                title="It's Community Night!!!",
+                description="It's TheBanditWombat's weekly Community Night!",
+                color=banditColor
+            )
+            
+            
+            epochtime = dateCalculator(self.day_type, self.time_type)
+            
+            embed.add_field(name="Game 🎮", value=game_name, inline=True)
+            embed.add_field(name="", value="Make sure your game is downloaded before hand!", inline=False)
+            embed.add_field(name="Timestamp ⏲️", value=f'<t:{epochtime}:F> [TIMES CONVERTED]', inline=True)
+            embed.set_footer(text=f'{interaction.user.display_name}', icon_url=f'{interaction.user.display_avatar.url}')
+            
+            # Determine the mention string based on selected option
+            mention_str = ""
+            if self.mention_type == "tageveryone":
+                mention_str = "@everyone"
+            elif self.mention_type == "taghere":
+                mention_str = "@here"
+                
+            await channel.send(mention_str, embed=embed)
+            await interaction.response.send_message("Community night announcement has been posted!", ephemeral=True)
+            logger.info(f'User {interaction.user.display_name} sent the command Community Night')
+
+    @app_commands.command(name="cmnight", description="Create a community night announcement")
+    async def cm_night(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            "Let's set up a community night! First, select who you'd like to notify.",
+            view=self.MentionSelectView(self),
+            ephemeral=True
+        )
+
+async def setup(bot):
+    await bot.add_cog(cmNightCommand(bot), guilds=[discord.Object(id=bot.guild_id)])
