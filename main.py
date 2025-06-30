@@ -6,6 +6,7 @@ from logger import logger
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
+from database.db_manager import CountingDatabase
 
 # Load environment variables
 load_dotenv()
@@ -16,12 +17,14 @@ EVENTS_CHANNEL_ID = int(os.getenv('DISCORD_EVENTS_CHANNEL'))
 GENERAL_CHANNEL_ID = int(os.getenv('DISCORD_GENERAL_CHANNEL'))
 SUPERSECRET_CHANNEL_ID = int(os.getenv('DISCORD_SUPERS_CHANNEL'))
 SECRET_CHANNEL_ID = int(os.getenv('DISCORD_SECRET_CHANNEL'))
+COUNTING_CHANNEL_ID = int(os.getenv('DISCORD_COUNTING'))
 
 class BanditBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(command_prefix="?", intents=intents)
+        self.counting_db = CountingDatabase()
         
         # Store important IDs
         self.guild_id = GUILD_ID
@@ -30,6 +33,7 @@ class BanditBot(commands.Bot):
         self.general_channel_id = GENERAL_CHANNEL_ID #
         self.supersecret_general_channel_id = SUPERSECRET_CHANNEL_ID
         self.secret_general_channel_id = SECRET_CHANNEL_ID
+        self.counting_channel_id = COUNTING_CHANNEL_ID
         self.logs_channel = None
         self.events_channel = None
         
@@ -37,6 +41,7 @@ class BanditBot(commands.Bot):
         # Load all cogs
         logger.info("Loading cogs...")
         cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
+        await self.counting_db.initialize()
         
         if not os.path.exists(cogs_dir):
             logger.error(f"Cogs directory not found at {cogs_dir}")
@@ -113,6 +118,16 @@ class BanditBot(commands.Bot):
         except Exception as e:
             logger.error(f'Error syncing event channel - {e}')
         #END setup supersecret_general channel
+
+        # Setup counting_channel_id channel
+        try:
+            self.counting_channel = self.get_channel(self.counting_channel_id)
+            if self.counting_channel is None:
+                self.counting_channel = await self.fetch_channel(self.counting_channel_id)
+            logger.info(f'Synced to events channel: {self.counting_channel.name}')
+        except Exception as e:
+            logger.error(f'Error syncing event channel - {e}')
+        #END setup counting_channel_id channel
             
     async def on_message(self, message):
         if message.author == self.user:
