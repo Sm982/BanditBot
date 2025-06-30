@@ -6,6 +6,11 @@ from logger import logger
 from discord import app_commands
 from discord.ext import commands
 
+def is_user(user_id: int):
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.id == user_id
+    return app_commands.check(predicate)
+
 class CountingCog(commands.Cog):
    def __init__(self, bot):
        self.bot = bot
@@ -71,7 +76,6 @@ class CountingCog(commands.Cog):
        expected_number = self.current_count + 1
        if number != expected_number:
            await self.reset_count(message.channel, f"{message.author.mention} broke the chain! Expected {expected_number}, got {number}")
-           await message.delete()
            return
        
        if message.author.id == self.last_user_id:
@@ -104,6 +108,41 @@ class CountingCog(commands.Cog):
        await channel.send(embed=embed)
        await self.save_state()
    
+   @app_commands.command(name="supercheatcount", description="Directy set the count")
+   @is_user(764025944750948362)
+   async def super_cheat_count(self, interaction: discord.Interaction, number: int):
+       
+       if number < 0:
+           await interaction.response.send_message("❌ Count cannot be negative!", ephemeral=True)
+           return
+   
+       old_count = self.current_count
+       self.current_count = number
+       self.last_user_id = None  # Reset last user so anyone can continue
+   
+       if number > self.highest_count:
+           self.highest_count = number
+   
+       await self.save_state()
+   
+       embed = discord.Embed(
+           title="🔧 Count Manually Set",
+           description=f"Count changed from **{old_count}** to **{number}**",
+           color=discord.Color.gold()
+       )
+   
+       await interaction.response.send_message(embed=embed)
+   
+       # Notify the counting channel
+       counting_channel = self.bot.get_channel(self.bot.counting_channel_id)
+       if counting_channel:
+           notify_embed = discord.Embed(
+               title="🔧 Count Updated",
+               description=f"Count has been manually set to **{number}**",
+               color=discord.Color.gold()
+           )
+           await counting_channel.send(embed=notify_embed)
+
    @app_commands.command(name="cheatcounting", description="If for some reason, some accident ocurrs, cast a vote to reset the count to the previous save!")
    @app_commands.checks.has_any_role('Bandits Admins')
    async def cheat_count(self, interaction: discord.Interaction, reason: str = "Manual revert requested"):
