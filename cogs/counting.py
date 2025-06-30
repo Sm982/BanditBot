@@ -16,7 +16,7 @@ class CountingCog(commands.Cog):
 
        self.active_votes = {}
        self.vote_duration = 300
-       self.required_votes = 3
+       self.required_votes = 2
 
    async def cog_app_command_error(self, interaction: discord.Interaction, error):
        if isinstance(error, app_commands.errors.MissingAnyRole):
