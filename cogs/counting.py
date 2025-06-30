@@ -10,7 +10,28 @@ class CountingCog(commands.Cog):
         self.current_count = 0
         self.last_user_id = None
         self.highest_count = 0
+        self.state_loaded = False
 
+    async def load_state(self):
+        if not self.state_loaded:
+            state = await self.bot.counting_db.get_counting_state(self.bot.guild_id)
+            self.current_count = state['current_count']
+            self.last_user_id = state['last_user_id']
+            self.highest_count = state['highest_count']
+            self.state_loaded = True
+
+    async def save_state(self):
+        await self.bot.counting_db.update_counting_state(
+            self.bot.guild_id,
+            self.current_count,
+            self.last_user_id,
+            self.highest_count
+        )
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.load_state()
+    
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot:
@@ -32,8 +53,7 @@ class CountingCog(commands.Cog):
         
         expected_number = self.current_count + 1
         if number != expected_number:
-            await self.reset_count(message.channel, f"Wrong number! Expected {expected_number}, got {number}")
-            await message.delete()
+            await self.reset_count(message.channel, f"{message.author.mention} broke the chain! Expected {expected_number}, got {number}")
             return
         
         if message.author.id == self.last_user_id:
@@ -48,6 +68,7 @@ class CountingCog(commands.Cog):
             self.highest_count = number
         
         await message.add_reaction("✅")
+        await self.save_state()
 
     def is_valid_number(self, content):
         return re.match(r'^\d+$', content) is not None
@@ -62,5 +83,7 @@ class CountingCog(commands.Cog):
             color=discord.Color.red()
         )
         await channel.send(embed=embed)
+        await self.save_state()
+        
 async def setup(bot):
     await bot.add_cog(CountingCog(bot))
