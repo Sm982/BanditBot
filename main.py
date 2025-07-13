@@ -25,9 +25,17 @@ async def healthcheck(request):
     return web.json_response({"status": "ok"})
 
 def start_health_server():
+    loop = asyncio.new_event_loop()  # create a new event loop
+    asyncio.set_event_loop(loop)
     app = web.Application()
     app.add_routes([web.get('/health', healthcheck)])
-    web.run_app(app, host="0.0.0.0", port=6363)
+
+    runner = web.AppRunner(app)
+    loop.run_until_complete(runner.setup())
+    site = web.TCPSite(runner, host="0.0.0.0", port=6363)
+    loop.run_until_complete(site.start())
+    print("Healthcheck server running on http://0.0.0.0:6363/health")
+    loop.run_forever()
 
 threading.Thread(target=start_health_server, daemon=True).start()
 
