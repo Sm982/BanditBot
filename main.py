@@ -28,7 +28,7 @@ def start_health_server():
     loop = asyncio.new_event_loop()  # create a new event loop
     asyncio.set_event_loop(loop)
     app = web.Application()
-    app.add_routes([web.get('/health', healthcheck)])
+    app.add_routes([web.get('/DevBanditBot/health', healthcheck)])
 
     runner = web.AppRunner(app)
     loop.run_until_complete(runner.setup())
