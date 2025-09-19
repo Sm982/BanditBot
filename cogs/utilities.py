@@ -56,8 +56,8 @@ class UtilityCommands(commands.Cog):
     async def about(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'SillyMonkey hasn\'t finished writing this command yet!')
     
-    @app_commands.command(name="highestCountCMD", description="Get the current highest count")
-    async def highestCountCMD(self, interaction: discord.Interaction):
+    @app_commands.command(name="highestcountcmd", description="Get the current highest count")
+    async def highestcountcmd(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'{self.highestcount} |')
 
 async def setup(bot):
