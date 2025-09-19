@@ -65,7 +65,7 @@ class UtilityCommands(commands.Cog):
     
     @app_commands.command(name="highestcountcmd", description="Get the current highest count")
     async def highestcountcmd(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'{self.highestcount} |')
+        await interaction.response.send_message(f'{self.highest_count} |')
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])
