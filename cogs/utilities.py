@@ -10,6 +10,13 @@ class UtilityCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.start_time = time.time()
+        self.current_count = 0
+        self.last_user_id = None
+        self.highest_count = 0
+        self.state_loaded = False
+        self.active_votes = {}
+        self.vote_duration = 600
+        self.required_votes = 5
     global banditColor
     banditColor = 0x0a8888
 
