@@ -24,6 +24,14 @@ class UtilityCommands(commands.Cog):
             else:
                 await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
             logger.error(f'Error in command: {str(error)}')
+    
+    async def load_state(self):
+       if not self.state_loaded:
+           state = await self.bot.counting_db.get_counting_state(self.bot.guild_id)
+           self.current_count = state['current_count']
+           self.last_user_id = state['last_user_id']
+           self.highest_count = state['highest_count']
+           self.state_loaded = True
         
     @app_commands.command(name="info", description="Check the bot's uptime and latency")
     @app_commands.checks.has_any_role('Bandits Admins') 
@@ -47,6 +55,10 @@ class UtilityCommands(commands.Cog):
     @app_commands.command(name="about", description="Learn all about BanditBot!")
     async def about(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'SillyMonkey hasn\'t finished writing this command yet!')
+    
+    @app_commands.command(name="highestCountCMD", description="Get the current highest count")
+    async def highestCountCMD(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f'{self.highestcount} |')
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])
