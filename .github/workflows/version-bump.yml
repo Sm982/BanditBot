@@ -1,0 +1,101 @@
+name: Auto Version Bump
+
+on:
+  push:
+    branches: [ development, main ]
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Update version
+      run: |
+        python << 'EOF'
+        import json
+        import datetime
+        from pathlib import Path
+
+        # Read current version
+        version_file = Path('version.json')
+        if version_file.exists():
+            with open(version_file, 'r') as f:
+                version_data = json.load(f)
+        else:
+            version_data = {"major": 1, "minor": 0, "patch": 0, "build": "B2509S00"}
+
+        # Get branch name
+        branch = "${{ github.ref_name }}"
+        
+        if branch == "development":
+            # Increment patch version
+            version_data["patch"] += 1
+            
+            # Auto increment minor every 30 patches
+            if version_data["patch"] % 30 == 0:
+                version_data["minor"] += 1
+                version_data["patch"] = 0
+            
+            # Generate new build number
+            now = datetime.datetime.now()
+            year_suffix = str(now.year)[-2:]  # Last 2 digits of year
+            month_num = f"{now.month:02d}"    # Month number with leading zero
+            month_initial = now.strftime("%b")[0].upper()  # First letter of month
+            
+            # Extract minor and patch for build number
+            minor_part = version_data["minor"] % 10
+            patch_part = version_data["patch"] % 10
+            
+            build_number = f"B{year_suffix}{month_num}{month_initial}{minor_part}{patch_part}"
+            version_data["build"] = build_number
+            
+            print(f"New version: {version_data['major']}.{version_data['minor']}.{version_data['patch']}")
+            print(f"New build: {version_data['build']}")
+            
+            # Write back to file
+            with open(version_file, 'w') as f:
+                json.dump(version_data, f, indent=2)
+            
+            # Set output for commit message
+            with open('commit_msg.txt', 'w') as f:
+                f.write(f"🤖 Auto version bump: v{version_data['major']}.{version_data['minor']}.{version_data['patch']} ({version_data['build']})")
+        
+        elif branch == "main":
+            # On main branch, just update build number (production deploy)
+            now = datetime.datetime.now()
+            year_suffix = str(now.year)[-2:]
+            month_num = f"{now.month:02d}"
+            month_initial = now.strftime("%b")[0].upper()
+            minor_part = version_data["minor"] % 10
+            patch_part = version_data["patch"] % 10
+            
+            build_number = f"B{year_suffix}{month_num}{month_initial}{minor_part}{patch_part}"
+            version_data["build"] = build_number
+            
+            with open(version_file, 'w') as f:
+                json.dump(version_data, f, indent=2)
+            
+            with open('commit_msg.txt', 'w') as f:
+                f.write(f"🚀 Production build: v{version_data['major']}.{version_data['minor']}.{version_data['patch']} ({version_data['build']})")
+        EOF
+
+    - name: Commit version bump
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        if [ -f commit_msg.txt ]; then
+          git add version.json
+          git commit -m "$(cat commit_msg.txt)" || echo "No changes to commit"
+          git push || echo "No changes to push"
+        fi
