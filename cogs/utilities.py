@@ -5,6 +5,7 @@ from discord import Color
 from logger import logger
 import platform
 import time
+import json
 
 class UtilityCommands(commands.Cog):
     def __init__(self, bot):
@@ -61,7 +62,10 @@ class UtilityCommands(commands.Cog):
         
     @app_commands.command(name="about", description="Learn all about BanditBot!")
     async def about(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'SillyMonkey hasn\'t finished writing this command yet!')
+        with open ('./version.json', 'r') as f:
+            versno = json.load(f)
+        versinfo = f"Version: {versno['major']}.{versno['minor']}.{versno['patch']} Build {versno['build']}"
+        await interaction.response.send_message(f'{versinfo}')
     
     @app_commands.command(name="highestcountcmd", description="Get the current highest count")
     async def highestcountcmd(self, interaction: discord.Interaction):
