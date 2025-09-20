@@ -65,7 +65,16 @@ class UtilityCommands(commands.Cog):
         with open ('./version.json', 'r') as f:
             versno = json.load(f)
         versinfo = f"Version: {versno['major']}.{versno['minor']}.{versno['patch']} Build {versno['build']}"
-        await interaction.response.send_message(f'{versinfo}')
+        embed = discord.Embed(
+            title="About BanditBot",
+            description="BanditBot is a feature-rich Discord bot built with Python using a modular cog system to handle commands, designed specifically for the one and only streamer of the year TheBanditWombat. It enhances his community server with engaging counting games, utility commands, and community management tools that keep members entertained while providing essential functionality.",
+            color=banditColor
+        )
+        embed.set_footer(text="Bot made by SillyMonkey982", icon_url="https://cdn.discordapp.com/icons/852803880273444885/de8c32d6ba1d97c87725f57a290da82c.png?size=80&quality=lossless")
+        embed.set_author(name="‎", icon_url="https://cdn.discordapp.com/avatars/1345267097411911690/ed77459d3af253c42234f6ab94bb9b2d.webp?size=160")
+        embed.add_field(name="Version", value=f"{versinfo}", inline=True)
+        embed.timestamp = discord.utils.utcnow()
+        await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])
