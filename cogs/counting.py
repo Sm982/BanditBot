@@ -181,6 +181,16 @@ class CountingCog(commands.Cog):
        
        asyncio.create_task(self._vote_timer(self.bot.guild_id))
 
+   @app_commands.command(name="highestcount", description="Get the highest count ever recorded")
+   async def highest_count_cmd(self, interaction: discord.Interaction):
+       embed = discord.Embed(
+           title="Highest count recorded",
+           description=f"**Highest count recorded** {self.highest_count}",
+           color = discord.Color.gold()
+       )
+       await interaction.response.send_message(embed=embed)
+       
+
    @commands.Cog.listener()
    async def on_reaction_add(self, reaction, user):
        if user.bot:

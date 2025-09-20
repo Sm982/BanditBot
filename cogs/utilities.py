@@ -66,10 +66,6 @@ class UtilityCommands(commands.Cog):
             versno = json.load(f)
         versinfo = f"Version: {versno['major']}.{versno['minor']}.{versno['patch']} Build {versno['build']}"
         await interaction.response.send_message(f'{versinfo}')
-    
-    @app_commands.command(name="highestcountcmd", description="Get the current highest count")
-    async def highestcountcmd(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'{self.highest_count} |')
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])
