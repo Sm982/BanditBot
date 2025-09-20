@@ -5,11 +5,19 @@ from discord import Color
 from logger import logger
 import platform
 import time
+import json
 
 class UtilityCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.start_time = time.time()
+        self.current_count = 0
+        self.last_user_id = None
+        self.highest_count = 0
+        self.state_loaded = False
+        self.active_votes = {}
+        self.vote_duration = 600
+        self.required_votes = 5
     global banditColor
     banditColor = 0x0a8888
 
@@ -24,6 +32,14 @@ class UtilityCommands(commands.Cog):
             else:
                 await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
             logger.error(f'Error in command: {str(error)}')
+    
+    async def load_state(self):
+       if not self.state_loaded:
+           state = await self.bot.counting_db.get_counting_state(self.bot.guild_id)
+           self.current_count = state['current_count']
+           self.last_user_id = state['last_user_id']
+           self.highest_count = state['highest_count']
+           self.state_loaded = True
         
     @app_commands.command(name="info", description="Check the bot's uptime and latency")
     @app_commands.checks.has_any_role('Bandits Admins') 
@@ -46,7 +62,19 @@ class UtilityCommands(commands.Cog):
         
     @app_commands.command(name="about", description="Learn all about BanditBot!")
     async def about(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'SillyMonkey hasn\'t finished writing this command yet!')
+        with open ('./version.json', 'r') as f:
+            versno = json.load(f)
+        versinfo = f"Version: {versno['major']}.{versno['minor']}.{versno['patch']} Build {versno['build']}"
+        embed = discord.Embed(
+            title="About BanditBot",
+            description="BanditBot is a feature-rich Discord bot built with Python using a modular cog system to handle commands, designed specifically for the one and only streamer of the year TheBanditWombat. It enhances his community server with engaging counting games, utility commands, and community management tools that keep members entertained while providing essential functionality.",
+            color=banditColor
+        )
+        embed.set_footer(text="Bot made by SillyMonkey982", icon_url="https://cdn.discordapp.com/icons/852803880273444885/de8c32d6ba1d97c87725f57a290da82c.png?size=80&quality=lossless")
+        embed.set_author(name="‎", icon_url="https://cdn.discordapp.com/avatars/1345267097411911690/ed77459d3af253c42234f6ab94bb9b2d.webp?size=160")
+        embed.add_field(name="Version", value=f"{versinfo}", inline=True)
+        embed.timestamp = discord.utils.utcnow()
+        await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])

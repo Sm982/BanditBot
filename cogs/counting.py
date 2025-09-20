@@ -76,6 +76,7 @@ class CountingCog(commands.Cog):
        expected_number = self.current_count + 1
        if number != expected_number:
            await self.reset_count(message.channel, f"{message.author.mention} broke the chain! Expected {expected_number}, got {number}")
+           await message.channel.edit(topic=f"Highest Recorded Count: {self.highest_count}")
            return
        
        if message.author.id == self.last_user_id:
@@ -180,6 +181,16 @@ class CountingCog(commands.Cog):
        }
        
        asyncio.create_task(self._vote_timer(self.bot.guild_id))
+
+   @app_commands.command(name="highestcount", description="Get the highest count ever recorded")
+   async def highest_count_cmd(self, interaction: discord.Interaction):
+       embed = discord.Embed(
+           title="Highest count recorded",
+           description=f"**Highest count recorded** {self.highest_count}",
+           color = discord.Color.gold()
+       )
+       await interaction.response.send_message(embed=embed)
+       
 
    @commands.Cog.listener()
    async def on_reaction_add(self, reaction, user):

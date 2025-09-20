@@ -2,6 +2,8 @@ import discord
 import os
 import asyncio
 import importlib.util
+import threading
+from aiohttp import web
 from logger import logger
 from discord.ext import commands
 from discord import app_commands
@@ -18,6 +20,24 @@ GENERAL_CHANNEL_ID = int(os.getenv('DISCORD_GENERAL_CHANNEL'))
 SUPERSECRET_CHANNEL_ID = int(os.getenv('DISCORD_SUPERS_CHANNEL'))
 SECRET_CHANNEL_ID = int(os.getenv('DISCORD_SECRET_CHANNEL'))
 COUNTING_CHANNEL_ID = int(os.getenv('DISCORD_COUNTING'))
+
+async def healthcheck(request):
+    return web.json_response({"status": "ok"})
+
+def start_health_server():
+    loop = asyncio.new_event_loop()  # create a new event loop
+    asyncio.set_event_loop(loop)
+    app = web.Application()
+    app.add_routes([web.get('/devbanditbot/health', healthcheck)])
+
+    runner = web.AppRunner(app)
+    loop.run_until_complete(runner.setup())
+    site = web.TCPSite(runner, host="0.0.0.0", port=6363)
+    loop.run_until_complete(site.start())
+    print("Healthcheck server running on http://0.0.0.0:6363/health")
+    loop.run_forever()
+
+threading.Thread(target=start_health_server, daemon=True).start()
 
 class BanditBot(commands.Bot):
     def __init__(self):
