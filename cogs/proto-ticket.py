@@ -30,8 +30,8 @@ class ProtoTicket(commands.Cog):
             description="",
             color=banditColor
         )
-        embed.add_field(name="Notice", value="This conversation is logged. After this ticket has been closed, a transcript will be saved.", inline=True)
-        embed.add_field(name="Ticket handled by", value=f"claimed-user", inline=True)
+        embed.add_field(name="Notice", value="This conversation is logged. After this ticket has been closed, a transcript will be saved.", inline=False)
+        embed.add_field(name="Ticket handled by", value=f"claimed-user", inline=False)
         embed.timestamp = discord.utils.utcnow()
 
         view = TicketControlView(embed)
@@ -50,7 +50,7 @@ class TicketControlView(discord.ui.View):
             await interaction.response.send_message("Only Admins can claim tickets!", ephemeral = True)
             return
         
-        self.embed.set_field_at(1, name="Ticket handled by", value=f"{interaction.user.display_name}", inline = True)
+        self.embed.set_field_at(1, name="Ticket handled by", value=f"{interaction.user.display_name}", inline = False)
         await interaction.response.edit_message(embed=self.embed, view=self)
         await interaction.followup.send(f"Ticket claimed by {interaction.user.display_name}")
 
