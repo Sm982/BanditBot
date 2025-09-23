@@ -42,7 +42,7 @@ class ticketDatabase:
             async with aiosqlite.connect(self.db_path) as db:
                 await db.execute(""" 
                     INSERT INTO ticketing_db(ticket_number, creator_user_id, created_at)
-                    VALUES (?, ?, ?, ?)
+                    VALUES (?, ?, ?)
                 """, (ticket_number, creator_user_id, created_at))
                 await db.commit()
             logger.info(f"Created ticket #{ticket_number} for user {creator_user_id}")
