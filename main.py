@@ -64,6 +64,7 @@ class BanditBot(commands.Bot):
         logger.info("Loading cogs...")
         cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
         await self.counting_db.initialize()
+        await self.ticket_db.initialize()
         
         if not os.path.exists(cogs_dir):
             logger.error(f"Cogs directory not found at {cogs_dir}")
