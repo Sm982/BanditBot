@@ -9,6 +9,7 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 from database.db_manager import CountingDatabase
+from database.ticket_db import ticketDatabase
 
 # Load environment variables
 load_dotenv()
@@ -45,6 +46,7 @@ class BanditBot(commands.Bot):
         intents.message_content = True
         super().__init__(command_prefix="?", intents=intents)
         self.counting_db = CountingDatabase()
+        self.ticket_db = ticketDatabase()
         
         # Store important IDs
         self.guild_id = GUILD_ID
