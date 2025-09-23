@@ -37,7 +37,7 @@ class ticketDatabase:
         
     async def create_ticket(self, creator_user_id, created_at):
         try:
-            ticket_number = await self.get_next_ticket_number()
+            ticket_number = await self.next_ticket_number()
 
             async with aiosqlite.connect(self.db_path) as db:
                 await db.execute(""" 
