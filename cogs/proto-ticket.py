@@ -1,4 +1,7 @@
 import discord
+import re
+import asyncio
+from collections import defaultdict
 from discord import app_commands
 from discord.ext import commands
 from discord import Color
@@ -7,6 +10,9 @@ from logger import logger
 class ProtoTicket(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.state_loaded = False
+
+
 
     global banditColor
     banditColor = 0x0a8888
@@ -23,10 +29,24 @@ class ProtoTicket(commands.Cog):
                 await interaction.response.send_message(f"An error occurred: {str(error)}", ephemeral=True)
             logger.error(f'Error in command: {str(error)}')
 
+    async def load_state(self):
+        if not self.state_loaded: 
+            state = await self.bot.ticket_db.initialize()
+            self.state_loaded = True
+
     @app_commands.command(name="proticket", description="Create a support ticket")
     async def proticket(self, interaction: discord.Interaction):
+        ticketNumber = await self.bot.ticket_db.create_ticket(
+            creator_user_id=interaction.user.id,
+            created_at=discord.utils.utcnow().isoformat()
+        )
+
+        if ticketNumber is None:
+            await interaction.response.send_message("Failed to create ticket. Please try again.", ephemeral=True)
+            return
+
         embed = discord.Embed(
-            title="Ticket #xxxxxxx",
+            title=f"Ticket #{ticketNumber}",
             description="",
             color=banditColor
         )
