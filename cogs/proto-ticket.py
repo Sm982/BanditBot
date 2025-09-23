@@ -44,6 +44,9 @@ class ProtoTicket(commands.Cog):
         if ticketNumber is None:
             await interaction.response.send_message("Failed to create ticket. Please try again.", ephemeral=True)
             return
+        
+        guild = interaction.guild
+        channel = await guild.create_text_channel(f"Ticket #{ticketNumber}")
 
         embed = discord.Embed(
             title=f"Ticket #{ticketNumber}",
@@ -55,14 +58,19 @@ class ProtoTicket(commands.Cog):
         embed.timestamp = discord.utils.utcnow()
 
         view = TicketControlView(embed)
+        await channel.send(embed=embed, view=view)
 
-        await interaction.response.send_message(embed=embed, view=view)
+        await interaction.response.send_message("Ticket created", ephemeral=True)
 
 
 class TicketControlView(discord.ui.View):
     def __init__(self, embed):
         super().__init__(timeout=None)
         self.embed = embed
+
+    @discord.ui.button(label="Close ticket", style=discord.ButtonStyle.red, emoji="⭐")
+    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.followup.send(f"Ticket closed")
     
     @discord.ui.button(label="Claim ticket", style=discord.ButtonStyle.green, emoji="⭐")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
