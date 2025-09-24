@@ -62,6 +62,13 @@ class ProtoTicket(commands.Cog):
 
         thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.private_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
         staff_role = discord.utils.get(guild.roles, id=1044403662996373609)
+        if staff_role:
+        
+            for member in staff_role.members:
+                try:
+                    await thread.add_user(member)
+                except discord.HTTPException:
+                    pass  # Skip if user can't be added
         
         await thread.send(f"<@{staff_role}> 🔒 **Staff Only Discussion**\nThis is a private discussion thread for Ticket #{ticketNumber}")
         await interaction.response.send_message("Ticket created", ephemeral=True)
