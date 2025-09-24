@@ -60,7 +60,7 @@ class ProtoTicket(commands.Cog):
         view = TicketControlView()
         await channel.send(embed=embed, view=view)
 
-        thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.public_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
+        thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.private_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
         staff_role_id= 1044403662996373609
         staff_role = discord.utils.get(guild.roles, id=staff_role_id)
         if staff_role:
@@ -71,7 +71,7 @@ class ProtoTicket(commands.Cog):
                 except discord.HTTPException:
                     pass  # Skip if user can't be added
         
-        await thread.send(f"<@{staff_role_id}> 🔒 **Staff Only Discussion**\nThis is a private discussion thread for Ticket #{ticketNumber}")
+        await thread.send(f"{staff_role.mention} 🔒 **Staff Only Discussion**\nThis is a private discussion thread for Ticket #{ticketNumber}")
         await interaction.response.send_message("Ticket created", ephemeral=True)
 
 
