@@ -10,6 +10,8 @@ from discord import app_commands
 from dotenv import load_dotenv
 from database.db_manager import CountingDatabase
 from database.ticket_db import ticketDatabase
+from cogs.prototicket import TicketControlView
+
 
 # Load environment variables
 load_dotenv()
@@ -38,7 +40,8 @@ def start_health_server():
     print("Healthcheck server running on http://0.0.0.0:6363/health")
     loop.run_forever()
 
-threading.Thread(target=start_health_server, daemon=True).start()
+#disabling this as it's too annoying and doesn't work.
+#threading.Thread(target=start_health_server, daemon=True).start()
 
 class BanditBot(commands.Bot):
     def __init__(self):
@@ -79,6 +82,12 @@ class BanditBot(commands.Bot):
                     logger.info(f'Loaded cog: {filename[:-3]}')
                 except Exception as e:
                     logger.error(f'Failed to load cog {filename}: {str(e)}')
+
+        try:
+            self.add_view(TicketControlView())
+            logger.info("Persistent Ticket buttons loaded")
+        except ImportError as e:
+            logger.error(f"Failed to import TicketControlView or failed to load persistent buttons")
         
         # Sync commands with guild
         try:
@@ -151,6 +160,7 @@ class BanditBot(commands.Bot):
         except Exception as e:
             logger.error(f'Error syncing event channel - {e}')
         #END setup counting_channel_id channel
+        
             
     async def on_message(self, message):
         if message.author == self.user:

@@ -66,21 +66,22 @@ class ProtoTicket(commands.Cog):
 class TicketControlView(discord.ui.View):
     def __init__(self, embed):
         super().__init__(timeout=None)
-        self.embed = embed
-
-    @discord.ui.button(label="Close ticket", style=discord.ButtonStyle.red, emoji="⭐")
-    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.followup.send(f"Ticket closed")
     
-    @discord.ui.button(label="Claim ticket", style=discord.ButtonStyle.green, emoji="⭐")
+    @discord.ui.button(label="Claim ticket", style=discord.ButtonStyle.green, emoji="⭐", custom_id="claim_ticket")
     async def claim_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not any (role.name == 'Bandits Admins' for role in interaction.user.roles):
             await interaction.response.send_message("Only Admins can claim tickets!", ephemeral = True)
             return
         
-        self.embed.set_field_at(1, name="Ticket handled by", value=f"{interaction.user.display_name}", inline = False)
-        await interaction.response.edit_message(embed=self.embed, view=self)
-        await interaction.followup.send(f"Ticket claimed by {interaction.user.display_name}")
+        if interaction.message.embeds:
+            embed = interaction.message.embeds[0]
+            embed.set_field_at(1, name="Ticket handled by", value=f"{interaction.user.display_name}", inline=False)
+            await interaction.response.edit_message(embed=embed, view=self)
+            await interaction.followup.send(f"Ticket claimed by {interaction.user.display_name}")
+
+    @discord.ui.button(label="Close ticket", style=discord.ButtonStyle.red, emoji="🔒", custom_id="close_ticket")
+    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.followup.send(f"Ticket closed")
 
 
 async def setup(bot):
