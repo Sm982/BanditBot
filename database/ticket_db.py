@@ -58,6 +58,20 @@ class ticketDatabase:
                 SELECT * FROM ticketing_db WHERE ticket_number = ?
             """, (ticket_number,))
             return await cursor.fetchone()
+        
+    async def check_if_claimed_ticket(self, ticket_number):
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(""" 
+                SELECT assigned_to FROM ticketing_db WHERE ticket_number = ?
+            """, (ticket_number))
+            return await cursor.fetchone()
+        
+    async def assign_ticket(self, ticket_number, assigned_to_user_id):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(""" 
+                UPDATE ticketing_db SET assigned_to = ? WHERE ticket_number = ?
+            """, (assigned_to_user_id, ticket_number))
+            await db.commit()
 
         
     async def update_ticket_status(self, ticket_number, status, closed_at=None):

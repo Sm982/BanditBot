@@ -64,7 +64,7 @@ class ProtoTicket(commands.Cog):
 
 
 class TicketControlView(discord.ui.View):
-    def __init__(self, embed):
+    def __init__(self):
         super().__init__(timeout=None)
     
     @discord.ui.button(label="Claim ticket", style=discord.ButtonStyle.green, emoji="⭐", custom_id="claim_ticket")
@@ -75,9 +75,18 @@ class TicketControlView(discord.ui.View):
         
         if interaction.message.embeds:
             embed = interaction.message.embeds[0]
+
+            ticket_number = int(embed.title.split('#')[1])
+
+            result = await interaction.client.ticket_db.check_if_claimed_ticket(ticket_number)
+            if result and result[0] is not None:
+                await interaction.response.send_message("This ticket has already been claimed!", ephemeral=True)
+                return
+            
             embed.set_field_at(1, name="Ticket handled by", value=f"{interaction.user.display_name}", inline=False)
             await interaction.response.edit_message(embed=embed, view=self)
             await interaction.followup.send(f"Ticket claimed by {interaction.user.display_name}")
+            await interaction.client.ticket_db.assign_ticket(ticket_number, interaction.user.id)
 
     @discord.ui.button(label="Close ticket", style=discord.ButtonStyle.red, emoji="🔒", custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
