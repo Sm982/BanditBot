@@ -57,7 +57,7 @@ class ProtoTicket(commands.Cog):
         embed.add_field(name="Ticket handled by", value=f"claimed-user", inline=False)
         embed.timestamp = discord.utils.utcnow()
 
-        view = TicketControlView(embed)
+        view = TicketControlView()
         await channel.send(embed=embed, view=view)
 
         await interaction.response.send_message("Ticket created", ephemeral=True)
