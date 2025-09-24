@@ -60,7 +60,7 @@ class ProtoTicket(commands.Cog):
         view = TicketControlView()
         await channel.send(embed=embed, view=view)
 
-        thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.private_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
+        thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.public_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
         staff_role = discord.utils.get(guild.roles, id=1044403662996373609)
         if staff_role:
         
