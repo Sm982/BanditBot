@@ -90,9 +90,6 @@ class ticketDatabase:
                 """, (status, ticket_number))
             await db.commit()
 
-    async def assign_ticket(self, ticket_number, assigned_to):
-        print('WRITE ME CODE')
-
     async def check_user_tickets(self, what_user_id):
         print('WRITE ME CODE')
 

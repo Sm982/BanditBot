@@ -88,6 +88,11 @@ class TicketControlView(discord.ui.View):
             await interaction.followup.send(f"Ticket claimed by {interaction.user.display_name}")
             await interaction.client.ticket_db.assign_ticket(ticket_number, interaction.user.id)
 
+            button.disabled = True
+            button.label = "Claimed!"
+            button.style = discord.ButtonStyle.gray
+            button.emoji= "✅"
+
     @discord.ui.button(label="Close ticket", style=discord.ButtonStyle.red, emoji="🔒", custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.followup.send(f"Ticket closed")
