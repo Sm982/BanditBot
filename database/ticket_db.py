@@ -63,7 +63,7 @@ class ticketDatabase:
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(""" 
                 SELECT assigned_to FROM ticketing_db WHERE ticket_number = ?
-            """, (ticket_number))
+            """, (ticket_number,))
             return await cursor.fetchone()
         
     async def assign_ticket(self, ticket_number, assigned_to_user_id):
