@@ -35,7 +35,7 @@ class ProtoTicket(commands.Cog):
             self.state_loaded = True
 
     @app_commands.command(name="add2ticket", description="Add a user to a ticket")
-    async def add2ticket(self, user: discord.user, interaction: discord.Interaction):
+    async def add2ticket(self, interaction: discord.Interaction, user: discord.user):
         if not interaction.channel.name.startswith("ticket-"):
             await interaction.response.send_message("This command can only be used in ticket channels.", ephemeral=True)
             return
