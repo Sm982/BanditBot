@@ -6,16 +6,29 @@ from discord import app_commands
 from discord.ext import commands
 from discord import Color
 from logger import logger
+from datetime import datetime
+
+
+async def closeTicket(interaction: discord.Interaction):
+    if not interaction.channel.name.startswith("ticket-"):
+        await interaction.response.send_message("This command can only be used in ticket channels.", ephemeral=True)
+        return
+        
+    channelName = interaction.channel.name
+    ticketNumber = channelName.removeprefix("ticket-")
+
+    await interaction.response.send_message(f"Closing ticket #{ticketNumber}")
+
+    currentTime = datetime.now()
+    interaction.client.bot.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
+
+    await asyncio.sleep(2)
+    await interaction.channel.delete(reason="Test")
 
 class ProtoTicket(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.state_loaded = False
-
-
-
-    global banditColor
-    banditColor = 0x0a8888
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
@@ -35,9 +48,14 @@ class ProtoTicket(commands.Cog):
             self.state_loaded = True
 
     @app_commands.command(name="add2ticket", description="Add a user to a ticket")
-    async def add2ticket(self, interaction: discord.Interaction, user: discord.User):
-        if not interaction.channel.name.startswith("ticket-"):
-            await interaction.response.send_message("This command can only be used in ticket channels.", ephemeral=True)
+    @app_commands.checks.has_any_role('Bandits Admins')
+    async def add2ticket(self, interaction: discord.Interaction, user: discord.User, addTickNum: str):
+        addTickNumber = addTickNum
+        ticketPrefix = f"ticket-{addTickNumber}"
+        guild = interaction.guild
+
+        if not discord.utils.get(guild.channels, name=lambda name: name.startswith(ticketPrefix)):
+            await interaction.response.send_message("Either that ticket doesn't exist, or you entered the wrong input. Just enter e.g 31 for ticket 31.", ephemeral=True)
             return
         
         channel = interaction.channel
@@ -46,6 +64,9 @@ class ProtoTicket(commands.Cog):
         await channel.set_permissions(user, read_messages=True, send_messages=True)
         await interaction.response.send_message(f"Added <@{user_id}> to channel", ephemeral=True)
 
+    @app_commands.command(name="closeticket", description="Close the current ticket you're working in")
+    async def closecurrentticket(self, interaction: discord.Interaction):
+        await closeTicket(interaction)
 
     @app_commands.command(name="proticket", description="Create a support ticket")
     async def proticket(self, interaction: discord.Interaction):
@@ -70,7 +91,7 @@ class ProtoTicket(commands.Cog):
         embed = discord.Embed(
             title=f"Ticket #{ticketNumber}",
             description="",
-            color=banditColor
+            color=self.banditColor
         )
         embed.add_field(name="Notice", value="This conversation is logged. After this ticket has been closed, a transcript will be saved.", inline=False)
         embed.add_field(name="Ticket handled by", value=f"claimed-user", inline=False)
@@ -126,7 +147,7 @@ class TicketControlView(discord.ui.View):
 
     @discord.ui.button(label="Close ticket", style=discord.ButtonStyle.red, emoji="🔒", custom_id="close_ticket")
     async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.followup.send(f"Ticket closed")
+        await closeTicket(interaction)
 
 
 async def setup(bot):

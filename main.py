@@ -61,6 +61,7 @@ class BanditBot(commands.Bot):
         self.counting_channel_id = COUNTING_CHANNEL_ID
         self.logs_channel = None
         self.events_channel = None
+        self.banditColor = 0x0a8888
         
     async def setup_hook(self):
         # Load all cogs
