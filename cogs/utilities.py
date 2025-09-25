@@ -76,16 +76,5 @@ class UtilityCommands(commands.Cog):
         embed.timestamp = discord.utils.utcnow()
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="sync", description="Manually sync commands")
-    async def sync_commands_manual(self, interaction: discord.Interaction):
-        if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("Admin only.", ephemeral=True)
-            return
-    
-        guild = discord.Object(id=interaction.guild.id)
-        self.bot.tree.copy_global_to(guild=guild)
-        synced = await self.bot.tree.sync(guild=guild)
-        await interaction.response.send_message(f"Synced {len(synced)} commands.", ephemeral=True)
-
 async def setup(bot):
     await bot.add_cog(UtilityCommands(bot), guilds=[discord.Object(id=bot.guild_id)])
