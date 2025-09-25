@@ -20,7 +20,7 @@ async def closeTicket(interaction: discord.Interaction):
     await interaction.response.send_message(f"Closing ticket #{ticketNumber}")
 
     currentTime = datetime.now()
-    interaction.client.bot.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
+    interaction.client.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
 
     await asyncio.sleep(2)
     await interaction.channel.delete(reason="Test")
@@ -71,6 +71,7 @@ class ProtoTicket(commands.Cog):
 
     @app_commands.command(name="proticket", description="Create a support ticket")
     async def proticket(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         ticketNumber = await self.bot.ticket_db.create_ticket(
             creator_user_id=interaction.user.id,
             created_at=discord.utils.utcnow().isoformat()
@@ -113,7 +114,7 @@ class ProtoTicket(commands.Cog):
                     pass  # Skip if user can't be added
         
         await thread.send(f"{staff_role.mention} 🔒 **Staff Only Discussion**\nThis is a private discussion thread for Ticket #{ticketNumber}")
-        await interaction.response.send_message("Ticket created", ephemeral=True)
+        await interaction.followup.send("Ticket created", ephemeral=True)
 
 
 class TicketControlView(discord.ui.View):
