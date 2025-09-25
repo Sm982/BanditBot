@@ -29,6 +29,7 @@ class ProtoTicket(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.state_loaded = False
+        self.banditColor = bot.banditColor
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
