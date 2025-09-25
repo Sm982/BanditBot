@@ -40,13 +40,19 @@ class ProtoTicket(commands.Cog):
             creator_user_id=interaction.user.id,
             created_at=discord.utils.utcnow().isoformat()
         )
+        staff_role_id= 1044403662996373609
 
         if ticketNumber is None:
             await interaction.response.send_message("Failed to create ticket. Please try again.", ephemeral=True)
             return
         
         guild = interaction.guild
-        channel = await guild.create_text_channel(f"Ticket #{ticketNumber}")
+        channelOverwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+            interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+        channel = await guild.create_text_channel(f"Ticket #{ticketNumber}", overwrites=channelOverwrites)
 
         embed = discord.Embed(
             title=f"Ticket #{ticketNumber}",
