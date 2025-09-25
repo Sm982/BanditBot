@@ -43,7 +43,7 @@ class ProtoTicket(commands.Cog):
         channel = interaction.channel
         user_id = user.id
 
-        await channel.set_permissions(user_id, read_messages=True, send_messages=True)
+        await channel.set_permissions(user, read_messages=True, send_messages=True)
         await interaction.response.send_message(f"Added <@{user_id}> to channel", ephemeral=True)
 
 
