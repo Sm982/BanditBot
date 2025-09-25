@@ -34,6 +34,19 @@ class ProtoTicket(commands.Cog):
             state = await self.bot.ticket_db.initialize()
             self.state_loaded = True
 
+    @app_commands.command(name="add2Ticket", description="Add a user to a ticket")
+    async def add2Ticket(self, user: discord.user, interaction: discord.Interaction):
+        if not interaction.channel.name.startswith("ticket-"):
+            await interaction.response.send_message("This command can only be used in ticket channels.", ephemeral=True)
+            return
+        
+        channel = interaction.channel
+        user_id = user.id
+
+        await channel.set_permissions(user_id, read_messages=True, send_messages=True)
+        await interaction.response.send_message(f"Added <@{user_id}> to channel", ephemeral=True)
+
+
     @app_commands.command(name="proticket", description="Create a support ticket")
     async def proticket(self, interaction: discord.Interaction):
         ticketNumber = await self.bot.ticket_db.create_ticket(
