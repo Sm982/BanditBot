@@ -95,8 +95,8 @@ class BanditBot(commands.Bot):
             self.tree.clear_commands(guild=guild)
             await asyncio.sleep(1)
 
-            self.tree.copy_global_to(guild=guild)
-            await self.tree.sync(guild=guild)
+            self.tree.copy_global_to()
+            await self.tree.sync()
             logger.info(f'Synced commands to guild {self.guild_id}')
         except Exception as e:
             logger.error(f'Error syncing commands to guild - {e}')
