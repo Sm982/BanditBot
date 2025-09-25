@@ -49,7 +49,7 @@ class ProtoTicket(commands.Cog):
         guild = interaction.guild
         channelOverwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            staff_role: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+            staff_role_id: discord.PermissionOverwrite(read_messages=True, send_messages=True),
             interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
         channel = await guild.create_text_channel(f"Ticket #{ticketNumber}", overwrites=channelOverwrites)
