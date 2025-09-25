@@ -49,8 +49,8 @@ class ProtoTicket(commands.Cog):
 
     @app_commands.command(name="add2ticket", description="Add a user to a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
-    async def add2ticket(self, interaction: discord.Interaction, user: discord.User, addTickNum: str):
-        addTickNumber = addTickNum
+    async def add2ticket(self, interaction: discord.Interaction, user: discord.User, addticknum: str):
+        addTickNumber = addticknum
         ticketPrefix = f"ticket-{addTickNumber}"
         guild = interaction.guild
 
