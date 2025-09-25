@@ -92,6 +92,9 @@ class BanditBot(commands.Bot):
         # Sync commands with guild
         try:
             guild = discord.Object(id=self.guild_id)
+            self.tree.clear_commands(guild=guild)
+            await asyncio.sleep(1)
+
             self.tree.copy_global_to(guild=guild)
             await self.tree.sync(guild=guild)
             logger.info(f'Synced commands to guild {self.guild_id}')
