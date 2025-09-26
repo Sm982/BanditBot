@@ -20,7 +20,9 @@ async def closeTicket(interaction: discord.Interaction):
     await interaction.response.send_message(f"Closing ticket #{ticketNumber}")
 
     currentTime = datetime.now()
-    interaction.client.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
+    await interaction.client.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
+    user = interaction.user.id
+    await user.send("Test message")
 
     await asyncio.sleep(2)
     await interaction.channel.delete(reason="Test")
