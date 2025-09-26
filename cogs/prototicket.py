@@ -1,6 +1,7 @@
 import discord
 import re
 import asyncio
+import os
 from collections import defaultdict
 from discord import app_commands
 from discord.ext import commands
@@ -63,7 +64,20 @@ class ProtoTicket(commands.Cog):
             state = await self.bot.ticket_db.initialize()
             self.state_loaded = True
 
-    
+    @app_commands.command(name="gettickettranscript", description="Get a transcript from a ticket")
+    @app_commands.checks.has_any_role('Bandits Admins')
+    async def gettickettranscript(self, interaction: discord.Interaction, ticknum: str):
+        ticketPrefix = f"ticket-{ticknum}"
+        guild = interaction.guild
+
+        if not os.path.exists("transcripts/ticket-123.txt"):
+            interaction.response.send_message("File doesn't exist.", ephemeral=True)
+            return
+
+        user = interaction.user
+        await user.send("Here's your ticket transcript", file=discord.File(f"transcripts/{ticketPrefix}.txt"))
+
+
 
     @app_commands.command(name="add2ticket", description="Add a user to a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
