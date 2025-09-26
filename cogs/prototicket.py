@@ -22,7 +22,7 @@ async def closeTicket(interaction: discord.Interaction):
 
     currentTime = datetime.now()
     await interaction.client.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
-    user = interaction.user.id
+    user = interaction.user
     await user.send("Test message")
 
     # Create transcript - simple one-liner approach
