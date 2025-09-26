@@ -56,8 +56,10 @@ class ProtoTicket(commands.Cog):
         addTickNumber = addticknum
         ticketPrefix = f"ticket-{addTickNumber}"
         guild = interaction.guild
+        
+        ticket_channel= discord.utils.find(lambda c: c.name.startswith(ticketPrefix), guild.channels)
 
-        if not discord.utils.get(guild.channels, name=lambda name: name.startswith(ticketPrefix)):
+        if not ticket_channel:
             await interaction.response.send_message("Either that ticket doesn't exist, or you entered the wrong input. Just enter e.g 31 for ticket 31.", ephemeral=True)
             return
         
