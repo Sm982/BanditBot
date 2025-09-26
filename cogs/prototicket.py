@@ -57,7 +57,7 @@ class ProtoTicket(commands.Cog):
         
         ticket_channel= discord.utils.find(lambda c: c.name.startswith(ticketPrefix), guild.channels)
 
-        if not ticket_channel
+        if not ticket_channel:
             await interaction.response.send_message("Either that ticket doesn't exist, or you entered the wrong input. Just enter e.g 31 for ticket 31.", ephemeral=True)
             return
         
