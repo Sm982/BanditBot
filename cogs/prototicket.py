@@ -14,6 +14,7 @@ async def closeTicket(interaction: discord.Interaction):
         await interaction.response.send_message("This command can only be used in ticket channels.", ephemeral=True)
         return
         
+    channel = interaction.channel    
     channelName = interaction.channel.name
     ticketNumber = channelName.removeprefix("ticket-")
 
@@ -23,6 +24,18 @@ async def closeTicket(interaction: discord.Interaction):
     await interaction.client.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
     user = interaction.user.id
     await user.send("Test message")
+
+    # Create transcript - simple one-liner approach
+    transcript_file = f"transcripts/ticket-{ticketNumber}.txt"
+    os.makedirs("transcripts", exist_ok=True)
+    
+    with open(transcript_file, 'w', encoding='utf-8') as file:
+        file.write(f"Ticket #{ticketNumber} Transcript\n{'='*40}\n\n")
+        
+        async for message in channel.history(limit=None, oldest_first=True):
+            if not message.author.bot:  # Skip bot messages
+                timestamp = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                file.write(f"[{timestamp}] {message.author.display_name}: {message.content}\n")
 
     await asyncio.sleep(2)
     await interaction.channel.delete(reason="Test")
@@ -49,6 +62,8 @@ class ProtoTicket(commands.Cog):
         if not self.state_loaded: 
             state = await self.bot.ticket_db.initialize()
             self.state_loaded = True
+
+    
 
     @app_commands.command(name="add2ticket", description="Add a user to a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
