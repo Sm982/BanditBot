@@ -42,7 +42,7 @@ jobs:
             version_data["patch"] += 1
             
             # Auto increment minor every 30 patches
-            if version_data["patch"] % 30 == 0:
+            if version_data["patch"] % 45 == 0:
                 version_data["minor"] += 1
                 version_data["patch"] = 0
             
