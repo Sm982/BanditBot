@@ -10,7 +10,7 @@ class ReactionMonitor(commands.Cog):
         self.monitored_channel_id = None
 
     @app_commands.command(name="setup_reaction_monitor", description="Send a monitored embed to a channel")
-    @app_commands.check.has_any_role('Bandits Admins')
+    @app_commands.checks.has_any_role('Bandits Admins')
     @app_commands.describe(channel="The channel to send the embed to", title="Title of the embed", description="Description of the embed", emoji="The emoji to monitor")
     async def setup_monitor(self, interaction: discord.Interaction, channel: discord.TextChannel, title: str, description: str, emoji : str = "✅"):
         embed = discord.Embed(title=title, description=description, color=self.bot.banditColor)
@@ -33,7 +33,7 @@ class ReactionMonitor(commands.Cog):
 
     
     @app_commands.command(name="clear_reaction_monitor", description="Clear the currrent reaction monitor")
-    @app_commands.check.has_any_role('Bandits Admins')
+    @app_commands.checks.has_any_role('Bandits Admins')
     async def clear_monitor(self, interaction: discord.Interaction):
         if self.monitored_message_id:
             old_msg_id = self.monitored_message_id
