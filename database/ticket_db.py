@@ -11,6 +11,10 @@ class ticketDatabase:
     
     async def initialize(self):
         self.db = await aiosqlite.connect(self.db_path)
+
+        await self.db.execute("PRAGMA journal_mode=WAL")
+        await self.db.execute("PRAGMA synchronous=NORMAL")
+        
         await self.db.execute("""
             CREATE TABLE IF NOT EXISTS ticketing_db (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
