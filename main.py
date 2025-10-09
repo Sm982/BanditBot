@@ -23,6 +23,7 @@ GENERAL_CHANNEL_ID = int(os.getenv('DISCORD_GENERAL_CHANNEL'))
 SUPERSECRET_CHANNEL_ID = int(os.getenv('DISCORD_SUPERS_CHANNEL'))
 SECRET_CHANNEL_ID = int(os.getenv('DISCORD_SECRET_CHANNEL'))
 COUNTING_CHANNEL_ID = int(os.getenv('DISCORD_COUNTING'))
+CREATOR_USER_ID = int(os.getenv('DISCORD_CREATOR_USER_ID'))
 
 async def healthcheck(request):
     return web.json_response({"status": "ok"})
@@ -52,6 +53,7 @@ class BanditBot(commands.Bot):
         self.ticket_db = ticketDatabase()
         
         # Store important IDs
+        self.creator_user_id = CREATOR_USER_ID
         self.guild_id = GUILD_ID
         self.logs_channel_id = LOGS_CHANNEL_ID
         self.events_channel_id = EVENTS_CHANNEL_ID
@@ -99,7 +101,20 @@ class BanditBot(commands.Bot):
             logger.info(f'Synced commands to guild {self.guild_id}')
         except Exception as e:
             logger.error(f'Error syncing commands to guild - {e}')
-            
+
+    async def close(self):
+        try:
+            if self.counting_db and getattr(self.counting_db, "db", None):
+                await self.counting_db.db.close()
+                logger.info("Counting database closed")
+
+            if self.ticket_db and getattr(self.ticket_db, "db", None):
+                await self.ticket_db.db.close()
+                logger.info("Ticket database connection closed")
+        except Exception as e:
+            logger.critical(f"Error closing database connections: {e}")
+        await super().close()
+
     async def on_ready(self):
         logger.info(f'Logged in as {self.user} (ID: {self.user.id})')
         

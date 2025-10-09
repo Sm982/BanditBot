@@ -19,7 +19,8 @@ class ColoredFormatter(logging.Formatter):
         if levelname in self.COLORS:
             return f"{self.COLORS[levelname]}{log_message}{self.COLORS['RESET']}"
         return log_message
-
+#### WE NEED TO ACTUALLY CHECK AND MAKE SURE THE bot.log TEXT FILE IS WORKING #### 
+#### SETUP A COMMAND ALSO ONLY USABLE BY CREATOR_USER_ID TO RECEIVE LOGS OR LAST xx LINES OF LOG ####
 def setup_logger():
     # Configure the root logger
     logger = logging.getLogger()
