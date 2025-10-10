@@ -1,15 +1,28 @@
 import discord
+import asyncio
 from discord import app_commands
 from discord.ext import commands
 from discord import SelectOption, TextStyle
 from discord.ui import Select, View, Modal, TextInput
 from logger import logger
 
-# User inputs command /bugreport , opens modal with title and description, title and description gets sent to user sillymonkey982 ( CREATOR_USER_ID )
+# User inputs command /bugreport , opens modal with title and description, title and description gets sent to user ( CREATOR_USER_ID )
 
 class bugreportCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.dm_queue = asyncio.Queue()
+        self.bot.loop.create_task(self.process_dm_queue())
+
+    async def process_dm_queue(self):
+        await self.bot.await_until_ready()
+        while not self.bot.is_closed():
+            try:
+                user, embed = await self.dm_queue.get()
+                await user.send(embed=embed)
+                await asyncio.sleep(1)
+            except Exception as e:
+                logger.error(f"Error processing dm queue {str(e)}")
     
     class BugReportModal(Modal):
         def __init__(self, cog):
@@ -45,7 +58,7 @@ class bugreportCommand(commands.Cog):
             )
             embed.set_footer(text=f"Reported by {interaction.user.name} ({interaction.user.id})")
             
-            await user.send(embed=embed)
+            await self.cog.dm_queue.put(user, embed)
             await interaction.response.send_message("Bug report has been successfully sent! Thanks for your report!", ephemeral=True)
     
     async def cog_app_command_error(self, interaction: discord.Interaction, error):

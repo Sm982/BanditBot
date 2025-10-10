@@ -24,6 +24,7 @@ SUPERSECRET_CHANNEL_ID = int(os.getenv('DISCORD_SUPERS_CHANNEL'))
 SECRET_CHANNEL_ID = int(os.getenv('DISCORD_SECRET_CHANNEL'))
 COUNTING_CHANNEL_ID = int(os.getenv('DISCORD_COUNTING'))
 CREATOR_USER_ID = int(os.getenv('DISCORD_CREATOR_USER_ID'))
+STAFF_ROLE_ID= int(os.getenv('DISCORD_STAFF_ROLE'))
 
 async def healthcheck(request):
     return web.json_response({"status": "ok"})
@@ -61,6 +62,7 @@ class BanditBot(commands.Bot):
         self.supersecret_general_channel_id = SUPERSECRET_CHANNEL_ID
         self.secret_general_channel_id = SECRET_CHANNEL_ID
         self.counting_channel_id = COUNTING_CHANNEL_ID
+        self.staff_role_id = STAFF_ROLE_ID
         self.logs_channel = None
         self.events_channel = None
         self.banditColor = 0x0a8888

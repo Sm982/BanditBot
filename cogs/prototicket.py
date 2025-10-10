@@ -64,6 +64,57 @@ class ProtoTicket(commands.Cog):
             state = await self.bot.ticket_db.initialize()
             self.state_loaded = True
 
+    async def create_ticket_channel(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        staff_role_id = self.bot.staff_role_id
+
+        await interaction.response.defer(ephemeral=True)
+
+        ticketNumber = await self.bot.ticket_db.create_ticket(
+            creator_user_id= interaction.user.id,
+            created_at= discord.utils.utcnow().isoformat()
+        )
+
+        if ticketNumber is None:
+            await interaction.response.send_message("Failed to create ticket. Please try again.", ephemeral=True)
+            return
+        
+        channelOverwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            guild.get_role(staff_role_id): discord.PermissionOverwrite(read_messages=True, send_messages=True),
+            interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+
+        channel = await guild.create_text_channel(f"Ticket #{ticketNumber}", overwrites=channelOverwrites)
+
+        thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.private_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
+        staff_role = discord.utils.get(guild.roles, id=staff_role_id)
+        if staff_role:
+            for member in staff_role.members:
+                try:
+                    await thread.add_user(member)
+                except discord.HTTPException:
+                    pass  # Skip if user can't be added
+        
+        await thread.send(f"{staff_role.mention} 🔒 **Staff Only Discussion**\nThis is a private discussion thread for Ticket #{ticketNumber}")
+
+        # create the embed
+        embed = discord.Embed(
+            title=f"Ticket #{ticketNumber}",
+            description="",
+            color=self.banditColor
+        )
+
+        embed.add_field(name="Notice", value="This conversation is logged. After this ticket has been closed, a transcript will be saved.", inline=False)
+        embed.add_field(name="Ticket handled by", value=f"claimed-user", inline=False)
+        embed.timestamp = discord.utils.utcnow()
+
+        # add the button then send the message
+        view = TicketControlView()
+        await channel.send(embed=embed, view=view)
+
+        await interaction.followup.send(f"Ticket <#{channel.id}> created!")
+
     @app_commands.command(name="gettickettranscript", description="Get a transcript from a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
     async def gettickettranscript(self, interaction: discord.Interaction, ticknum: str):
@@ -77,7 +128,20 @@ class ProtoTicket(commands.Cog):
         user = interaction.user
         await user.send("Here's your ticket transcript", file=discord.File(f"transcripts/{ticketPrefix}.txt"))
 
+    @app_commands.command(name="ticketlisten", description="Set the listening channel for the ticket embed")
+    async def ticketlistener(self, interaction: discord.Interaction):
+        if interaction.user.id != self.bot.creator_user_id:
+            await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+            return
 
+        embed = discord.Embed(
+            title="Create a ticket!",
+            description="",
+            color=self.bot.banditColor
+        )
+
+        view = TicketCreateControlView()
+        await interaction.channel.send(embed=embed, view=view)
 
     @app_commands.command(name="add2ticket", description="Add a user to a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
@@ -103,52 +167,16 @@ class ProtoTicket(commands.Cog):
         await closeTicket(interaction)
 
     @app_commands.command(name="proticket", description="Create a support ticket")
-    async def proticket(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        ticketNumber = await self.bot.ticket_db.create_ticket(
-            creator_user_id=interaction.user.id,
-            created_at=discord.utils.utcnow().isoformat()
-        )
-        staff_role_id= 1044403662996373609
+    async def create_the_ticket(self, interaction: discord.Interaction):
+        await self.create_ticket_channel(self)
 
-        if ticketNumber is None:
-            await interaction.response.send_message("Failed to create ticket. Please try again.", ephemeral=True)
-            return
-        
-        guild = interaction.guild
-        channelOverwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.get_role(staff_role_id): discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        channel = await guild.create_text_channel(f"Ticket #{ticketNumber}", overwrites=channelOverwrites)
-
-        embed = discord.Embed(
-            title=f"Ticket #{ticketNumber}",
-            description="",
-            color=self.banditColor
-        )
-        embed.add_field(name="Notice", value="This conversation is logged. After this ticket has been closed, a transcript will be saved.", inline=False)
-        embed.add_field(name="Ticket handled by", value=f"claimed-user", inline=False)
-        embed.timestamp = discord.utils.utcnow()
-
-        view = TicketControlView()
-        await channel.send(embed=embed, view=view)
-
-        thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.private_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
-        staff_role_id= 1044403662996373609
-        staff_role = discord.utils.get(guild.roles, id=staff_role_id)
-        if staff_role:
-        
-            for member in staff_role.members:
-                try:
-                    await thread.add_user(member)
-                except discord.HTTPException:
-                    pass  # Skip if user can't be added
-        
-        await thread.send(f"{staff_role.mention} 🔒 **Staff Only Discussion**\nThis is a private discussion thread for Ticket #{ticketNumber}")
-        await interaction.followup.send("Ticket created", ephemeral=True)
-
+class TicketCreateControlView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+    
+    @discord.ui.button(label="Create a Ticket", style=discord.ButtonStyle.gray, emoji="📩", custom_id="create_ticket")
+    async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.create_ticket_channel(self)
 
 class TicketControlView(discord.ui.View):
     def __init__(self):
