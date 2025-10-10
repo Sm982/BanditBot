@@ -135,12 +135,12 @@ class ProtoTicket(commands.Cog):
             return
 
         embed = discord.Embed(
-            title="Create a ticket!",
-            description="",
+            title="Ticket",
+            description="To create a ticket use the Create ticket button",
             color=self.bot.banditColor
         )
 
-        view = TicketCreateControlView()
+        view = TicketCreateControlView(self)
         await interaction.channel.send(embed=embed, view=view)
 
     @app_commands.command(name="add2ticket", description="Add a user to a ticket")
@@ -168,15 +168,16 @@ class ProtoTicket(commands.Cog):
 
     @app_commands.command(name="proticket", description="Create a support ticket")
     async def create_the_ticket(self, interaction: discord.Interaction):
-        await self.create_ticket_channel(self)
+        await self.create_ticket_channel(interaction)
 
 class TicketCreateControlView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, cog):
         super().__init__(timeout=None)
+        self.cog = cog
     
-    @discord.ui.button(label="Create a Ticket", style=discord.ButtonStyle.gray, emoji="📩", custom_id="create_ticket")
+    @discord.ui.button(label="Create a Ticket", style=discord.ButtonStyle.green, emoji="📩", custom_id="create_ticket")
     async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.create_ticket_channel(self)
+        await self.cog.create_ticket_channel(interaction)
 
 class TicketControlView(discord.ui.View):
     def __init__(self):
