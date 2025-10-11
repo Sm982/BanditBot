@@ -15,7 +15,7 @@ class bugreportCommand(commands.Cog):
         self.bot.loop.create_task(self.process_dm_queue())
 
     async def process_dm_queue(self):
-        await self.bot.await_until_ready()
+        await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             try:
                 user, embed = await self.dm_queue.get()

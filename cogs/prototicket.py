@@ -166,13 +166,14 @@ class ProtoTicket(commands.Cog):
         await self.create_ticket_channel(interaction)
 
 class TicketCreateControlView(discord.ui.View):
-    def __init__(self, cog):
+    def __init__(self):
         super().__init__(timeout=None)
-        self.cog = cog
+        
     
     @discord.ui.button(label="Create a Ticket", style=discord.ButtonStyle.green, emoji="📩", custom_id="create_ticket")
     async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.cog.create_ticket_channel(interaction)
+        cog = interaction.client.get_cog('ProtoTicket')
+        await cog.create_ticket_channel(interaction)
 
 class TicketControlView(discord.ui.View):
     def __init__(self):
