@@ -107,13 +107,14 @@ class ProtoTicket(commands.Cog):
 
         embed.add_field(name="Notice", value="This conversation is logged. After this ticket has been closed, a transcript will be saved.", inline=False)
         embed.add_field(name="Ticket handled by", value=f"claimed-user", inline=False)
+        embed.set_footer(text="‎", icon_url="https://cdn.discordapp.com/avatars/1345267097411911690/ed77459d3af253c42234f6ab94bb9b2d.webp?size=160")
         embed.timestamp = discord.utils.utcnow()
 
         # add the button then send the message
         view = TicketControlView()
         await channel.send(embed=embed, view=view)
 
-        await interaction.followup.send(f"Ticket <#{channel.id}> created!")
+        await interaction.followup.send(f"Ticket <#{channel.id}> created!", ephemeral=True)
 
     @app_commands.command(name="gettickettranscript", description="Get a transcript from a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
@@ -121,8 +122,8 @@ class ProtoTicket(commands.Cog):
         ticketPrefix = f"ticket-{ticknum}"
         guild = interaction.guild
 
-        if not os.path.exists("transcripts/ticket-123.txt"):
-            interaction.response.send_message("File doesn't exist.", ephemeral=True)
+        if not os.path.exists(f"transcripts/ticket-{ticknum}.txt"):
+            await interaction.response.send_message("File doesn't exist.", ephemeral=True)
             return
 
         user = interaction.user
@@ -139,28 +140,22 @@ class ProtoTicket(commands.Cog):
             description="To create a ticket use the Create ticket button",
             color=self.bot.banditColor
         )
+        embed.set_footer(text="BanditBot", icon_url="https://cdn.discordapp.com/avatars/1345267097411911690/ed77459d3af253c42234f6ab94bb9b2d.webp?size=160")
 
         view = TicketCreateControlView(self)
         await interaction.channel.send(embed=embed, view=view)
 
-    @app_commands.command(name="add2ticket", description="Add a user to a ticket")
+    @app_commands.command(name="add", description="Add a user to a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
-    async def add2ticket(self, interaction: discord.Interaction, user: discord.User, addticknum: str):
-        addTickNumber = addticknum
-        ticketPrefix = f"ticket-{addTickNumber}"
+    async def addusertoticket(self, interaction: discord.Interaction, user: discord.User, channel: discord.TextChannel):
         guild = interaction.guild
-        
-        ticket_channel= discord.utils.find(lambda c: c.name.startswith(ticketPrefix), guild.channels)
 
-        if not ticket_channel:
-            await interaction.response.send_message("Either that ticket doesn't exist, or you entered the wrong input. Just enter e.g 31 for ticket 31.", ephemeral=True)
+        if not channel.name.startswith("ticket-"):
+            await interaction.response.send_message("Either that ticket doesn't exist or you entered a regular channel!", ephemeral=True)
             return
         
-        channel = interaction.channel
-        user_id = user.id
-
         await channel.set_permissions(user, read_messages=True, send_messages=True)
-        await interaction.response.send_message(f"Added <@{user_id}> to channel", ephemeral=True)
+        await interaction.response.send_message(f"Added <@{user.id}> to ticket <#{channel.id}>", ephemeral=True)
 
     @app_commands.command(name="closeticket", description="Close the current ticket you're working in")
     async def closecurrentticket(self, interaction: discord.Interaction):
@@ -206,7 +201,7 @@ class TicketControlView(discord.ui.View):
             
             embed.set_field_at(1, name="Ticket handled by", value=f"<@{interaction.user.id}>", inline=False)
             await interaction.response.edit_message(embed=embed, view=self)
-            await interaction.followup.send(f"Ticket claimed by {interaction.user.display_name}")
+            await interaction.followup.send(f"Ticket claimed by <@{interaction.user.id}>")
             await interaction.client.ticket_db.assign_ticket(ticket_number, interaction.user.id)
 
     @discord.ui.button(label="Close ticket", style=discord.ButtonStyle.red, emoji="🔒", custom_id="close_ticket")

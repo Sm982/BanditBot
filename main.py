@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from database.db_manager import CountingDatabase
 from database.ticket_db import ticketDatabase
 from cogs.prototicket import TicketControlView
+from cogs.prototicket import TicketCreateControlView
 
 
 # Load environment variables
@@ -90,6 +91,7 @@ class BanditBot(commands.Bot):
 
         try:
             self.add_view(TicketControlView())
+            self.add_view(TicketCreateControlView())
             logger.info("Persistent Ticket buttons loaded")
         except ImportError as e:
             logger.error(f"Failed to import TicketControlView or failed to load persistent buttons")
