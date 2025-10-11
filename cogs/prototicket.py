@@ -24,7 +24,6 @@ async def closeTicket(interaction: discord.Interaction):
     currentTime = datetime.now()
     await interaction.client.ticket_db.update_ticket_status(ticketNumber, "CLOSED", currentTime)
     user = interaction.user
-    await user.send("Test message")
 
     # Create transcript - simple one-liner approach
     transcript_file = f"transcripts/ticket-{ticketNumber}.txt"
@@ -39,6 +38,20 @@ async def closeTicket(interaction: discord.Interaction):
                 file.write(f"[{timestamp}] {message.author.display_name}: {message.content}\n")
 
     await asyncio.sleep(2)
+    creator_user_id = await interaction.client.ticket_db.get_ticket_creator(ticketNumber)
+    if creator_user_id:
+        try:
+            creator = await interaction.client.fetch_user(creator_user_id)
+            await creator.send(
+                f"Your ticket #{ticketNumber} has been closed. Here's the transcript:",
+                file=discord.File(transcript_file)
+            )
+            logger.info(f"Sent transcript for ticket #{ticketNumber} to user {creator_user_id}")
+        except discord.errors.Forbidden:
+            logger.warning(f"Could not send transcript to user {creator_user_id} - DMs disabled")
+        except Exception as e:
+            logger.error(f"Error sending transcript to user {creator_user_id}: {e}")
+    
     await interaction.channel.delete(reason="Test")
 
 class ProtoTicket(commands.Cog):
@@ -126,8 +139,7 @@ class ProtoTicket(commands.Cog):
             await interaction.response.send_message("File doesn't exist.", ephemeral=True)
             return
 
-        user = interaction.user
-        await user.send("Here's your ticket transcript", file=discord.File(f"transcripts/{ticketPrefix}.txt"))
+        await interaction.response.send_message("Here is your ticket transcript!", file=discord.File(f"transcripts/{ticketPrefix.txt}"))
 
     @app_commands.command(name="ticketlisten", description="Set the listening channel for the ticket embed")
     async def ticketlistener(self, interaction: discord.Interaction):
@@ -142,7 +154,7 @@ class ProtoTicket(commands.Cog):
         )
         embed.set_footer(text="BanditBot", icon_url="https://cdn.discordapp.com/avatars/1345267097411911690/ed77459d3af253c42234f6ab94bb9b2d.webp?size=160")
 
-        view = TicketCreateControlView(self)
+        view = TicketCreateControlView()
         await interaction.channel.send(embed=embed, view=view)
 
     @app_commands.command(name="add", description="Add a user to a ticket")

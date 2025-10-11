@@ -48,6 +48,12 @@ class ticketDatabase:
             await self.db.rollback()
             return None
         
+    async def get_ticket_creator(self, ticket_number):
+        cursor = await self.db.execute("""SELECT creator_user_id FROM ticketing_db WHERE ticket_number = ? """, (ticket_number,)) 
+        result = await cursor.fetchone()
+        await cursor.close()
+        return result
+
     async def get_ticket_by_number(self, ticket_number):
         cursor = await self.db.execute("""SELECT * FROM ticketing_db WHERE ticket_number = ? """, (ticket_number,))
         result = await cursor.fetchone()
