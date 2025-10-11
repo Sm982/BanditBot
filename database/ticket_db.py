@@ -52,7 +52,10 @@ class ticketDatabase:
         cursor = await self.db.execute("""SELECT creator_user_id FROM ticketing_db WHERE ticket_number = ? """, (ticket_number,)) 
         result = await cursor.fetchone()
         await cursor.close()
-        return result
+    
+        if result:
+            return result[0]  # Return just the ID, not the tuple
+        return None
 
     async def get_ticket_by_number(self, ticket_number):
         cursor = await self.db.execute("""SELECT * FROM ticketing_db WHERE ticket_number = ? """, (ticket_number,))

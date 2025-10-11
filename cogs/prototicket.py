@@ -139,7 +139,7 @@ class ProtoTicket(commands.Cog):
             await interaction.response.send_message("File doesn't exist.", ephemeral=True)
             return
 
-        await interaction.response.send_message("Here is your ticket transcript!", file=discord.File(f"transcripts/{ticketPrefix.txt}"))
+        await interaction.response.send_message("Here is your ticket transcript!", file=discord.File(f"transcripts/{ticketPrefix}.txt"))
 
     @app_commands.command(name="ticketlisten", description="Set the listening channel for the ticket embed")
     async def ticketlistener(self, interaction: discord.Interaction):
