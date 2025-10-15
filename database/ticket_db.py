@@ -81,7 +81,9 @@ class ticketDatabase:
         await self.db.commit()
 
     async def check_user_tickets(self, what_user_id):
-        logger.debug('WRITE THIS CODE SNIPPIT')
-
+        cursor = await self.db.execute("""SELECT ticket_number FROM ticketing_db WHERE creator_user_id = ? """, (what_user_id,))
+        result = await cursor.fetchall()
+        await cursor.close()
+        return result
     
     

@@ -129,6 +129,31 @@ class ProtoTicket(commands.Cog):
 
         await interaction.followup.send(f"Ticket <#{channel.id}> created!", ephemeral=True)
 
+    @app_commands.command(name="locatetickets", description="Get tickets from a user")
+    @app_commands.checks.has_any_role('Bandits Adminds')
+    async def locatetickets(self, interaction: discord.Interaction, user: discord.User):
+        userID = user.id
+
+        ticketNumbers = await interaction.client.ticket_db.check_user_tickets(userID)
+        
+        embed = discord.Embed(
+            title=f"Tickets created by {user.mention}",
+            description="Ticket Numbers",
+            color=self.banditColor
+        )
+        
+        if not ticketNumbers: 
+            embed.description = "This user has no tickets"
+        else:
+            ticket_list = [str(row[0]) for row in ticketNumbers]
+            embed.add_field(name="Tickets", value=", ".join(ticket_list), inline=False)
+        
+        embed.timestamp = discord.utils.utcnow()
+
+        await interaction.response.send_message(embed=embed)
+
+
+
     @app_commands.command(name="gettickettranscript", description="Get a transcript from a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
     async def gettickettranscript(self, interaction: discord.Interaction, ticknum: str):
