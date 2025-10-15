@@ -130,7 +130,7 @@ class ProtoTicket(commands.Cog):
         await interaction.followup.send(f"Ticket <#{channel.id}> created!", ephemeral=True)
 
     @app_commands.command(name="locatetickets", description="Get tickets from a user")
-    @app_commands.checks.has_any_role('Bandits Adminds')
+    @app_commands.checks.has_any_role('Bandits Admins')
     async def locatetickets(self, interaction: discord.Interaction, user: discord.User):
         userID = user.id
 
