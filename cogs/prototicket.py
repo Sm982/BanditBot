@@ -4,10 +4,10 @@ import asyncio
 import os
 from collections import defaultdict
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import Color
 from logger import logger
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 async def closeTicket(interaction: discord.Interaction):
@@ -77,6 +77,41 @@ class ProtoTicket(commands.Cog):
             state = await self.bot.ticket_db.initialize()
             self.state_loaded = True
 
+    @tasks.loop(hours=24)
+    async def cleanuptranscripts(self):
+        logger.info('Starting transcript cleanup task')
+
+        if not os.path.exists('transcripts'):
+            logger.error('Transcripts folder doesn\'t exist for some reason, skipping cleanup task')
+            return
+        
+        cutoff_time = datetime.now() - timedelta(days=90)
+        deleted_count = 0
+
+        try:
+            for filename in os.listdir('transcripts'):
+                file_path = os.path.join('transcripts', filename)
+
+                if os.path.isfile(file_path):
+                    file_created_time = datetime.fromtimestamp(os.path.getctime(file_path))
+
+                    if file_created_time < cutoff_time:
+                        try:
+                            os.remove(file_path)
+                            deleted_count +=1
+                            logger.info(f'Transcript cleanup task removed transcript: {file_path}')
+                        except Exception as e:
+                            logger.error(f'Transcript cleanup task ran into the following error {e}')
+
+            logger.info(f'Transcript cleanup task is completed. Deleted {deleted_count} files.')
+        except Exception as e:
+            logger.error(f'Transcript cleanup task couldn\'t run for some reason, error is {e}')
+
+    @cleanuptranscripts.before_loop
+    async def before_cleanup_tasks(self):
+        await self.bot.wait_until_ready()
+        logger.info('Transcript cleanup task is ready to go!')
+
     async def create_ticket_channel(self, interaction: discord.Interaction):
         guild = interaction.guild
         staff_role_id = self.bot.staff_role_id
@@ -98,9 +133,9 @@ class ProtoTicket(commands.Cog):
             interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
         }
 
-        channel = await guild.create_text_channel(f"Ticket #{ticketNumber}", overwrites=channelOverwrites)
+        channel = await guild.create_text_channel(f"ticket-{ticketNumber}", overwrites=channelOverwrites)
 
-        thread = await channel.create_thread(name=f"Staff-#{ticketNumber}", type=discord.ChannelType.private_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
+        thread = await channel.create_thread(name=f"Staff-{ticketNumber}", type=discord.ChannelType.private_thread, reason=f"Staff discussion for ticket #{ticketNumber}")
         staff_role = discord.utils.get(guild.roles, id=staff_role_id)
         if staff_role:
             for member in staff_role.members:
@@ -157,11 +192,18 @@ class ProtoTicket(commands.Cog):
     @app_commands.command(name="gettickettranscript", description="Get a transcript from a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')
     async def gettickettranscript(self, interaction: discord.Interaction, ticknum: str):
+
+        if not ticknum.isnumeric():
+            await interaction.response.send_message("Ticket number you entered is not a numeric value")
+            logger.warning(f'User {interaction.user.name} tried entering a ticket number in ticket transcript command, that was invalid.')
+            return
+
         ticketPrefix = f"ticket-{ticknum}"
         guild = interaction.guild
 
         if not os.path.exists(f"transcripts/ticket-{ticknum}.txt"):
             await interaction.response.send_message("File doesn't exist.", ephemeral=True)
+            logger.debug("Transcript file doesn't exist.")
             return
 
         await interaction.response.send_message("Here is your ticket transcript!", file=discord.File(f"transcripts/{ticketPrefix}.txt"))
@@ -198,7 +240,7 @@ class ProtoTicket(commands.Cog):
     async def closecurrentticket(self, interaction: discord.Interaction):
         await closeTicket(interaction)
 
-    @app_commands.command(name="proticket", description="Create a support ticket")
+    @app_commands.command(name="createticket", description="Create a support ticket")
     async def create_the_ticket(self, interaction: discord.Interaction):
         await self.create_ticket_channel(interaction)
 
