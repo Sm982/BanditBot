@@ -73,12 +73,15 @@ class CountingCog(commands.Cog):
            await message.delete()
            return
        
+       if number == 420:
+           await message.channel.send("420!!!!! 🚬 🍃")
+       
        expected_number = self.current_count + 1
        if number != expected_number:
            await self.reset_count(message.channel, f"{message.author.mention} broke the chain! Expected {expected_number}, got {number}")
            await message.channel.edit(topic=f"Highest Recorded Count: {self.highest_count}")
            return
-       
+
        if message.author.id == self.last_user_id:
            await self.reset_count(message.channel, f"{message.author.mention} posted twice in a row!")
            await message.delete()

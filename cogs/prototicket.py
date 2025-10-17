@@ -59,6 +59,10 @@ class ProtoTicket(commands.Cog):
         self.bot = bot
         self.state_loaded = False
         self.banditColor = bot.banditColor
+        self.cleanuptranscripts.start()
+    
+    def cog_unload(self):
+        self.cleanuptranscripts.cancel()
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.errors.MissingAnyRole):
@@ -85,7 +89,7 @@ class ProtoTicket(commands.Cog):
             logger.error('Transcripts folder doesn\'t exist for some reason, skipping cleanup task')
             return
         
-        cutoff_time = datetime.now() - timedelta(days=90)
+        cutoff_time = datetime.now() - timedelta(days=7)
         deleted_count = 0
 
         try:
