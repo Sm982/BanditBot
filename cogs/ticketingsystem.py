@@ -32,10 +32,13 @@ async def closeTicket(interaction: discord.Interaction):
     with open(transcript_file, 'w', encoding='utf-8') as file:
         file.write(f"Ticket #{ticketNumber} Transcript\n{'='*40}\n\n")
         
-        async for message in channel.history(limit=None, oldest_first=True):
+        async for message in channel.history(limit=1000, oldest_first=False):
             if not message.author.bot:  # Skip bot messages
                 timestamp = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 file.write(f"[{timestamp}] {message.author.display_name}: {message.content}\n")
+
+                for att in message.attachments:
+                    file.write(f"[{ts}] {message.author.display_name}: [attachment: {att.filename} - {att.url}]\n")
 
     await asyncio.sleep(2)
     creator_user_id = await interaction.client.ticket_db.get_ticket_creator(ticketNumber)
@@ -181,17 +184,22 @@ class ProtoTicket(commands.Cog):
             color=self.banditColor
         )
         
-        if not ticketNumbers: 
+        if not ticketNumbers:
             embed.description = "This user has no tickets"
         else:
-            ticket_list = [str(row[0]) for row in ticketNumbers]
-            embed.add_field(name="Tickets", value=", ".join(ticket_list), inline=False)
+            table = "```\n"
+            table += "ID\n"
+            table += "----\n"
+        
+            for row in ticketNumbers:
+                ticket_id = row[0]
+                table += f"{ticket_id}\n"
+        
+            table += "```"
+            embed.description = table
         
         embed.timestamp = discord.utils.utcnow()
-
         await interaction.response.send_message(embed=embed)
-
-
 
     @app_commands.command(name="gettickettranscript", description="Get a transcript from a ticket")
     @app_commands.checks.has_any_role('Bandits Admins')

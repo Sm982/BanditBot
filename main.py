@@ -10,8 +10,8 @@ from discord import app_commands
 from dotenv import load_dotenv
 from database.db_manager import CountingDatabase
 from database.ticket_db import ticketDatabase
-from cogs.prototicket import TicketControlView
-from cogs.prototicket import TicketCreateControlView
+from cogs.ticketingsystem import TicketControlView
+from cogs.ticketingsystem import TicketCreateControlView
 
 
 # Load environment variables
