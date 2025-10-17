@@ -72,6 +72,9 @@ class CountingCog(commands.Cog):
        except ValueError:
            await message.delete()
            return
+
+       if number == 420:
+           await message.channel.send("420!!!!! 🚬 🍃")
        
        expected_number = self.current_count + 1
        if number != expected_number:
