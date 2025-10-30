@@ -72,6 +72,9 @@ class CountingCog(commands.Cog):
        except ValueError:
            await message.delete()
            return
+         
+      if number == 67:
+         await message.channel.send("https://media.giphy.com/media/TpvnqBFOE0tVrnGU1h/giphy.gif")
 
        if number == 420:
            await message.channel.send("420!!!!! 🚬 🍃")
